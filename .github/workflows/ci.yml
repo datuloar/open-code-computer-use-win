@@ -1,0 +1,29 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Contract check
+        run: node src/verify.js
+      - name: Unit tests
+        run: node test/run.mjs
+      - name: Export and verify GitHub package
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File package-opencode.ps1 -OutputDir dist/ci -Repository $env:GITHUB_REPOSITORY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opencode-computer-use
+          path: |
+            dist/ci/*.zip
+            dist/ci/SHA256SUMS.txt
