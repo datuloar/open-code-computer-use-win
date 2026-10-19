@@ -1,10 +1,10 @@
 # Publish the Repository on GitHub
 
-Use this folder as the root of your new repository. It includes source, English documentation,
-tests, MIT license and GitHub Actions workflows. The suggested repository name is
-`opencode-computer-use`; the internal CLI package keeps `dsh-cu` for compatibility.
+The maintained repository is [datuloar/open-code-computer-use-win](https://github.com/datuloar/open-code-computer-use-win).
+It includes source, English documentation, tests, MIT license and GitHub Actions workflows.
+The internal CLI keeps `dsh-cu` for compatibility. Keep OpenCode releases in this repository.
 
-## Create the repository
+## Publish a fork or a clean export
 
 Create an empty GitHub repository under your account. Do not initialize another README,
 license or gitignore. In PowerShell, open this exported folder and run:
@@ -31,15 +31,15 @@ beside the ZIP. Neither checksum is a publisher signature.
 ```powershell
 node src/verify.js
 node test/run.mjs
-node src/package-opencode.js --check .
 ```
 
 GitHub runs the first two checks on Windows for pushes and pull requests. The hosted runner
 does not provide a verified interactive desktop, so CI does not run GUI input or physical ESC tests.
 See [VALIDATION.md](VALIDATION.md) for local desktop and OpenCode checks.
 
-After editing repository files, the export manifest describes the original package rather than
-your new working tree. Build a new export to generate an updated manifest and release archive.
+The maintained Git source does not carry a release integrity manifest. Every clean release export
+includes `PACKAGE-MANIFEST.json`. After extracting a release, verify it with
+`node src/package-opencode.js --check .` before editing files.
 
 ## Build a release locally
 
@@ -57,7 +57,7 @@ Use `-OutputDir <new folder>` to choose another output directory.
 
 `-Repository owner/repository` records your real GitHub metadata in the exported `package.json`.
 It does not create a repository, authenticate, push or publish anything. Without that option,
-the package omits repository-specific metadata and its guides still work.
+the package uses `datuloar/open-code-computer-use-win`.
 
 ## Publish a version tag
 

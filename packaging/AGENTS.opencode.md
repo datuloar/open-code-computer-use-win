@@ -12,14 +12,19 @@ For operating the desktop, read [opencode/SKILL.md](opencode/SKILL.md).
 | `opencode/plugin.js`, `src/opencode.js` | Native hooks and session cleanup |
 | `opencode/mcp.js`, `src/mcp.js` | Branded entry and shared MCP tool table |
 | `src/commands.js`, `src/cli.js` | Single CLI command table, validation and entry point |
+| `src/settings.js` | Countdown default and duration validation |
 | `src/backend.js`, `src/host.js` | Process transport, state files and warm backend |
 | `backends/windows.ps1` | Windows dispatch, indicator and elevated broker |
 | `backends/csharp/` | C# 5 input, UI Automation and indicator implementation |
+| `src/control-wait.js`, `backends/csharp/ControlState.cs` | Bounded observations and cancellable named-control waits |
 | `opencode/SKILL.md`, `opencode/INSTRUCTIONS.md` | Runtime agent guidance |
 | `src/package-opencode.js`, `packaging/` | Reproducible GitHub export and English documentation |
 | `test/`, `src/selftest.js` | Unit, integration and isolated desktop checks |
 
 ## Required rules
+
+- Maintain this product in `datuloar/open-code-computer-use-win` and its own checkout. Do not push
+  OpenCode integration changes to the DeepSeek Harness repository or reference its local files.
 
 - Do not add code comments in JS, C#, PowerShell or YAML. Put explanations in documentation.
 - Keep the CLI and package name `dsh-cu`, DSH skill `dsh-computer-use`, OpenCode skill
@@ -30,12 +35,17 @@ For operating the desktop, read [opencode/SKILL.md](opencode/SKILL.md).
   The package builder generates the README command reference. Run `node src/verify.js`.
 - Input must wait for the visible countdown and valid owner/readiness state. Do not bypass physical
   ESC, share another client's owner, or resume because a cancellation timer expired.
+- The countdown defaults to five seconds. Preserve the user's `DSH_CU_ANNOUNCE_SECONDS` setting
+  on reinstall; explicit CLI `--announce` overrides it. Invalid settings must still allow cleanup.
 - Releases must work after the gate closes. Never retry a broker request that was already taken.
   Partial input must be observed before a retry.
 - Cursor replacement is opt-in. Preserve the cursor marker, all restore paths and the default
   ring around the real cursor. Do not repair a cursor hidden by another program.
 - Validate all coordinates before input, including the destination before pressing for a drag.
   Keep input within the supported primary screen and Windows coordinate limits.
+- Inspect values only after non-password metadata is confirmed; preserve whitespace, null states
+  and truncation. Exact names precede enabled filtering. Conditional waits remain read-only,
+  deadline bounded and cancellable; timeout or ambiguity must never become ready.
 - Use `DSH_CU_ARGV` JSON for backend arguments. Never turn typed text into PowerShell parameters.
 - State reads race with cleanup. Treat missing or unreadable state as normal. Never stop a process
   by PID alone; preserve process type and start-time verification.

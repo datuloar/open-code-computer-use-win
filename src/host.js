@@ -28,15 +28,18 @@ export class BackendHost {
   }
 
   async send(argv, timeoutMs) {
-    await this.start();
+    const started = performance.now();
+    const exceeded = new ToolError(
+      `the backend was stopped after ${Math.round(timeoutMs / 1000)}s; the machine is busy or a dialog is waiting`,
+    );
+    const timeout = () => this.kill(exceeded);
+    const startupTimer = setTimeout(timeout, timeoutMs);
+    try { await this.start(); }
+    finally { clearTimeout(startupTimer); }
+    const remaining = timeoutMs - (performance.now() - started);
+    if (remaining <= 0) { timeout(); throw exceeded; }
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.kill(
-          new ToolError(
-            `the backend was stopped after ${Math.round(timeoutMs / 1000)}s; the machine is busy or a dialog is waiting`,
-          ),
-        );
-      }, timeoutMs);
+      const timer = setTimeout(timeout, remaining);
       const pending = {
         lines: [],
         chars: 0,

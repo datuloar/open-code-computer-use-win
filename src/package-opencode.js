@@ -54,7 +54,7 @@ function walk(root, path, accept, visit) {
   }
 }
 
-export function buildOpenCodePackage({ root = sourceRoot, outputDir, repository } = {}) {
+export function buildOpenCodePackage({ root = sourceRoot, outputDir, repository = 'datuloar/open-code-computer-use-win' } = {}) {
   root = resolve(root);
   if (repository !== undefined && (typeof repository !== 'string' || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\/[a-z0-9_.-]+$/i.test(repository)
     || repository.split('/')[1] === '.' || repository.split('/')[1] === '..'))
@@ -71,7 +71,7 @@ export function buildOpenCodePackage({ root = sourceRoot, outputDir, repository 
   for (const directory of directories) {
     const pattern = directory === 'src' || directory === 'lib' ? /\.js$/
       : directory === 'backends' ? /\.(?:ps1|cs)$/ : directory === 'bin' ? /\.cmd$/
-        : directory === 'test' ? /\.(?:mjs|ps1)$/ : /\.(?:md|yml)$/;
+        : directory === 'test' ? /\.(?:js|mjs|ps1)$/ : /\.(?:md|yml)$/;
     walk(root, directory, (path, isDirectory) => isDirectory ? !/(?:^|\/)(?:node_modules|dist|\.git)$/.test(path) : pattern.test(path),
       (path) => add(path, sourceFile(root, path).toString('utf8').replaceAll('\r\n', '\n')));
   }
@@ -81,6 +81,8 @@ export function buildOpenCodePackage({ root = sourceRoot, outputDir, repository 
     add(path, sourceFile(root, path).toString('utf8').replaceAll('\r\n', '\n'));
   }
   add('docs/opencode-indicator.png', sourceFile(root, 'docs/opencode-indicator.png'));
+  const alternatives = 'docs/opencode-alternatives-2026-10-18.md';
+  add(alternatives, sourceFile(root, alternatives).toString('utf8').replaceAll('\r\n', '\n'));
   for (const [source, target] of Object.entries(documents)) {
     let body = sourceFile(root, `packaging/${source}`).toString('utf8').replaceAll('\r\n', '\n');
     if (target === 'README.md') {

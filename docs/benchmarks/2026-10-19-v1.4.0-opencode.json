@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "suite": "dsh-cu-desktop",
+  "status": "passed",
+  "startedAt": "2026-10-19T02:51:49.003Z",
+  "version": "1.4.0",
+  "sourceSha256": "d1bc22067a7ec1acef6fbca04297b825dc623b6705549651d5b0474f63854297",
+  "environment": {
+    "platform": "win32",
+    "osRelease": "10.0.26200",
+    "arch": "x64",
+    "node": "v24.19.0",
+    "theme": "opencode",
+    "announceSeconds": 5,
+    "display": {
+      "width": 2560,
+      "height": 1440
+    }
+  },
+  "checks": [
+    {
+      "id": "documentation-and-command-surface-agree",
+      "name": "documentation and command surface agree",
+      "status": "passed",
+      "durationMs": 4
+    },
+    {
+      "id": "input-and-focus-refuse-before-the-indicator-starts",
+      "name": "input and focus refuse before the indicator starts",
+      "status": "passed",
+      "durationMs": 108
+    },
+    {
+      "id": "invalid-mcp-arguments-never-start-the-indicator",
+      "name": "invalid MCP arguments never start the indicator",
+      "status": "passed",
+      "durationMs": 2
+    },
+    {
+      "id": "mcp-focus-starts-a-countdown-and-blocks-concurrent-input",
+      "name": "MCP focus starts a countdown and blocks concurrent input",
+      "status": "passed",
+      "detail": "6359 ms including cold startup",
+      "metrics": {
+        "coldStartWithCountdownMs": 6359
+      },
+      "durationMs": 6360
+    },
+    {
+      "id": "warm-backend-reads-controls-and-recovers-after-an-error",
+      "name": "warm backend reads controls and recovers after an error",
+      "status": "passed",
+      "detail": "171 ms for the warm tree",
+      "metrics": {
+        "warmTreeMs": 171
+      },
+      "durationMs": 501
+    },
+    {
+      "id": "off-screen-move-and-drag-fail-before-changing-the-pointer",
+      "name": "off-screen move and drag fail before changing the pointer",
+      "status": "passed",
+      "durationMs": 1774
+    },
+    {
+      "id": "typing-preserves-unicode-whitespace-tabs-and-newlines",
+      "name": "typing preserves Unicode, whitespace, tabs and newlines",
+      "status": "passed",
+      "durationMs": 2307
+    },
+    {
+      "id": "typing-leaves-the-clipboard-sequence-unchanged",
+      "name": "typing leaves the clipboard sequence unchanged",
+      "status": "passed",
+      "durationMs": 59
+    },
+    {
+      "id": "uia-inspection-verifies-the-complete-typed-value-without-ocr",
+      "name": "UIA inspection verifies the complete typed value without OCR",
+      "status": "passed",
+      "durationMs": 178
+    },
+    {
+      "id": "tap-refuses-a-disabled-exact-target-instead-of-its-enabled-substring",
+      "name": "tap refuses a disabled exact target instead of its enabled substring",
+      "status": "passed",
+      "durationMs": 205
+    },
+    {
+      "id": "a-named-button-click-reaches-the-fixture",
+      "name": "a named button click reaches the fixture",
+      "status": "passed",
+      "durationMs": 372
+    },
+    {
+      "id": "tap-considers-exact-duplicates-beyond-its-displayed-candidate-limit",
+      "name": "tap considers exact duplicates beyond its displayed candidate limit",
+      "status": "passed",
+      "durationMs": 166
+    },
+    {
+      "id": "tap-refuses-a-covered-target-without-clicking-the-covering-window",
+      "name": "tap refuses a covered target without clicking the covering window",
+      "status": "passed",
+      "durationMs": 401
+    },
+    {
+      "id": "typed-flag-names-and-whitespace-remain-literal-text",
+      "name": "typed flag names and whitespace remain literal text",
+      "status": "passed",
+      "durationMs": 676
+    },
+    {
+      "id": "screenshot-returns-png-pixels",
+      "name": "screenshot returns PNG pixels",
+      "status": "passed",
+      "durationMs": 618
+    },
+    {
+      "id": "invalid-key-combinations-release-held-modifiers",
+      "name": "invalid key combinations release held modifiers",
+      "status": "passed",
+      "durationMs": 372
+    },
+    {
+      "id": "stop-removes-state-and-leaves-the-cursor-alone",
+      "name": "stop removes state and leaves the cursor alone",
+      "status": "passed",
+      "durationMs": 141
+    },
+    {
+      "id": "key-releases-still-work-after-control-stops",
+      "name": "key releases still work after control stops",
+      "status": "passed",
+      "durationMs": 587
+    },
+    {
+      "id": "read-only-inspection-bounds-values-and-hides-password-fields-without-starting-control",
+      "name": "read-only inspection bounds values and hides password fields without starting control",
+      "status": "passed",
+      "durationMs": 903
+    },
+    {
+      "id": "conditional-waiting-observes-readiness-without-moving-the-pointer-or-starting-control",
+      "name": "conditional waiting observes readiness without moving the pointer or starting control",
+      "status": "passed",
+      "metrics": {
+        "waitChecks": 2,
+        "waitForReadyMs": 655
+      },
+      "durationMs": 2467
+    },
+    {
+      "id": "a-configured-one-second-countdown-completes-before-control-is-ready",
+      "name": "a configured one second countdown completes before control is ready",
+      "status": "passed",
+      "metrics": {
+        "configuredSeconds": 1,
+        "startupWithCountdownMs": 2253
+      },
+      "durationMs": 2980
+    },
+    {
+      "id": "stopping-during-the-countdown-never-reports-control-ready",
+      "name": "stopping during the countdown never reports control ready",
+      "status": "passed",
+      "durationMs": 1628
+    },
+    {
+      "id": "cancelling-indicator-startup-leaves-no-late-indicator-behind",
+      "name": "cancelling indicator startup leaves no late indicator behind",
+      "status": "passed",
+      "durationMs": 1103
+    },
+    {
+      "id": "a-stop-interrupts-text-within-the-current-chunk",
+      "name": "a stop interrupts text within the current chunk",
+      "status": "passed",
+      "detail": "23 ms from stop request to MCP refusal",
+      "metrics": {
+        "stopToRefusalMs": 23
+      },
+      "durationMs": 2378
+    },
+    {
+      "id": "mcp-cancellation-interrupts-input-and-releases-the-desktop",
+      "name": "MCP cancellation interrupts input and releases the desktop",
+      "status": "passed",
+      "detail": "62 ms from cancellation to cleanup",
+      "metrics": {
+        "cancelToCleanupMs": 62
+      },
+      "durationMs": 2336
+    },
+    {
+      "id": "cursor-replacement-is-opt-in-and-restored-on-stop",
+      "name": "cursor replacement is opt-in and restored on stop",
+      "status": "passed",
+      "durationMs": 2421
+    },
+    {
+      "id": "killing-an-indicator-refuses-input-and-repairs-its-hidden-cursor",
+      "name": "killing an indicator refuses input and repairs its hidden cursor",
+      "status": "passed",
+      "durationMs": 2464
+    },
+    {
+      "id": "a-stale-pid-record-cannot-kill-the-fixture",
+      "name": "a stale pid record cannot kill the fixture",
+      "status": "passed",
+      "durationMs": 627
+    },
+    {
+      "id": "another-mcp-client-cannot-take-or-stop-this-desktop-session",
+      "name": "another MCP client cannot take or stop this desktop session",
+      "status": "passed",
+      "durationMs": 4638
+    },
+    {
+      "id": "mcp-disconnect-stops-its-owned-indicator",
+      "name": "MCP disconnect stops its owned indicator",
+      "status": "passed",
+      "durationMs": 1733
+    }
+  ],
+  "finishedAt": "2026-10-19T02:52:30.969Z",
+  "durationMs": 41966,
+  "summary": {
+    "passed": 30,
+    "failed": 0
+  }
+}

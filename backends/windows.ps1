@@ -6,8 +6,9 @@ param(
     [Parameter(Position = 4)][string]$A4,
     [Parameter(Position = 5)][string]$A5,
     [Parameter(Position = 6)][string]$A6,
-    [int]$Announce = 8,
+    [int]$Announce = 5,
     [int]$Depth = 6,
+    [int]$MaxChars = 1000,
     [string]$TargetPid = '',
     [string]$TargetTitle = '',
     [string]$Language = '',
@@ -29,8 +30,9 @@ function Set-Invocation {
     param([object[]]$Arguments)
     $script:Command = [string]$Arguments[0]
     $script:operands = New-Object System.Collections.ArrayList
-    $script:Announce = 8
+    $script:Announce = 5
     $script:Depth = 6
+    $script:MaxChars = 1000
     $script:TargetPid = ''
     $script:TargetTitle = ''
     $script:Language = ''
@@ -40,7 +42,7 @@ function Set-Invocation {
     $script:All = $false
     $script:Json = $false
     $flags = switch ($script:Command) {
-        { $_ -in @('tree', 'find', 'tap') } { @('-Depth', '-TargetPid', '-TargetTitle', '-All', '-Json') }
+        { $_ -in @('tree', 'find', 'tap', 'inspect') } { @('-Depth', '-TargetPid', '-TargetTitle', '-MaxChars', '-All', '-Json') }
         { $_ -in @('overlay', 'overlay-start') } { @('-Announce', '-Quiet', '-HideCursor') }
         'read' { @('-Language', '-Json') }
         'wheel' { @('--horizontal') }
@@ -48,7 +50,7 @@ function Set-Invocation {
     }
     for ($index = 1; $index -lt $Arguments.Count; $index++) {
         $argument = [string]$Arguments[$index]
-        if ($argument -notin $flags -or ($index -eq 1 -and $script:Command -in @('find', 'tap'))) {
+        if ($argument -notin $flags -or ($index -eq 1 -and $script:Command -in @('find', 'tap', 'inspect'))) {
             [void]$script:operands.Add($argument)
             continue
         }
@@ -56,6 +58,7 @@ function Set-Invocation {
         switch ($argument) {
             '-Announce' { $index++; if ($null -ne $next) { $script:Announce = [int]$next } }
             '-Depth' { $index++; if ($null -ne $next) { $script:Depth = [int]$next } }
+            '-MaxChars' { $index++; if ($null -ne $next) { $script:MaxChars = [int]$next } }
             '-TargetPid' { $index++; if ($null -ne $next) { $script:TargetPid = $next } }
             '-TargetTitle' { $index++; if ($null -ne $next) { $script:TargetTitle = $next } }
             '-Language' { $index++; if ($null -ne $next) { $script:Language = $next } }
@@ -97,7 +100,8 @@ $sources = @(
     'PointerRenderer',
     'Indicator',
     'SystemCursors',
-    'UiTree'
+    'UiTree',
+    'ControlState'
 )
 $source = ($sources | ForEach-Object { Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "csharp\$_.cs") }) -join "`n"
 Add-Type -TypeDefinition $source -ReferencedAssemblies System.Drawing, System.Windows.Forms, UIAutomationClient, UIAutomationTypes, WindowsBase
@@ -354,6 +358,7 @@ function Get-ActionLabel {
         'read' { return 'read the screen' }
         'tree' { return 'read the window tree' }
         'find' { return "find $x" }
+        'inspect' { return "inspect $x" }
         'tap' { return "click $x" }
         'focus' { return "focus pid $x" }
         'focus-title' { return "focus $x" }
@@ -424,6 +429,11 @@ function Invoke-Dispatch {
             [DshCu.UiTree]::EnsureVisibleAt($window, $node.CenterX, $node.CenterY)
             [DshCu.InputInjector]::Click($node.CenterX, $node.CenterY, 'left')
             Write-Output ("TAPPED " + $node.Role + " '" + $node.Label() + "' at " + $node.CenterX + "," + $node.CenterY)
+        }
+        'inspect' {
+            $needle = Arg 0
+            if ([string]::IsNullOrWhiteSpace($needle)) { throw 'inspect needs the name of the control' }
+            Write-Output ([DshCu.ControlState]::Inspect((Resolve-UiWindow), $needle, $MaxChars))
         }
         'move' { [DshCu.InputInjector]::Move((Test-Integer (Arg 0) 'x'), (Test-Integer (Arg 1) 'y')) }
         'click' {
@@ -618,6 +628,7 @@ function Invoke-Dispatch {
             Write-Output ("EXIT " + $code)
         }
         'overlay-start' {
+            if ($Announce -lt 0 -or $Announce -gt 30) { throw 'announce seconds must be between 0 and 30' }
             $startupLock = New-Object System.Threading.Mutex($false, 'Local\DshCuIndicatorStart')
             $locked = $false
             try {
@@ -674,6 +685,8 @@ function Invoke-Dispatch {
                     $stopLock.Dispose()
                 }
             }
+            if ($Announce -lt 0 -or $Announce -gt 30) { throw 'announce seconds must be between 0 and 30' }
+            Assert-ClientOwnership
             if (Test-Path $stopFile) { Remove-Item $stopFile -Force }
             Clear-Indicator
             $context = New-Object DshCu.Indicator($Quiet, $Announce, [bool]$HideCursor)

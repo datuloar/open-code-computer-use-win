@@ -1,8 +1,10 @@
 # Desktop Behavior and Limits
 
-The plugin sends real Windows input. Input tools start an eight second on-screen announcement;
+The plugin sends real Windows input. Input tools start a five second on-screen announcement by default;
 the backend refuses input until the indicator publishes readiness. Quiet mode still shows the
 announcement first. The real cursor remains visible unless cursor replacement is explicitly selected.
+The user can save a duration from 0 to 30 seconds through `install-opencode.ps1 -AnnounceSeconds N`.
+Zero skips the timed wait; ownership, readiness, the visible control indicator and physical ESC still apply.
 
 Physical ESC closes control and records a human stop. MCP input refuses automatic restart for
 ten minutes. The agent must ask before resuming; elapsed time is not authorization to resume.
@@ -15,6 +17,12 @@ Prefer `computer_tap` for a uniquely named UI Automation control. It checks for 
 and for another window covering the click point. Coordinate tools such as `computer_click` do not
 inherit that named-target protection. Use a fresh observation after scrolling, moving windows
 or changing focus. A successful input return confirms delivery, not application task success.
+
+`computer_find` with `details: true` reads one control's value and state without input. Values are
+bounded and keep whitespace; use them as complete evidence only when `valueStatus` is `available`
+and `truncated` is false. Password text is never requested. Unsupported or unavailable text is null.
+Conditional `computer_wait` calls observe a named target until it exists or is enabled, with a
+positive deadline up to 30 seconds and cancellation. An enabled control can still be covered.
 
 `computer_type` preserves Unicode and whitespace. It sends newline as Enter and tab as Tab,
 and does not replace the clipboard. Calls are limited to 2000 characters. Interrupted typing can

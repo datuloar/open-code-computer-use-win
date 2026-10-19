@@ -36,6 +36,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install-opencode.ps1
 The execution policy option applies to that PowerShell process. It does not change the machine's
 stored execution policy. Close and restart OpenCode after installation.
 
+## Move an existing installation
+
+Clone [open-code-computer-use-win](https://github.com/datuloar/open-code-computer-use-win) into its own
+permanent folder. From that new folder, replace the explicitly named previous checkout:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-opencode.ps1 -MigrateFrom 'C:\path\to\previous-checkout'
+```
+
+The installer backs up the configuration, moves only the matching `computer` entry and plugin,
+and preserves the provider, model, countdown, enabled setting, timeout and other servers. A different
+`computer` server is a conflict and is left unchanged. Restart OpenCode after migration.
+
 ## Confirm the connection
 
 ```powershell
@@ -55,6 +68,19 @@ does not prove that tools ran; inspect the tool calls in the OpenCode session.
 
 ## Configuration changes
 
+The control countdown defaults to five seconds. Save another duration and restart OpenCode:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-opencode.ps1 -AnnounceSeconds 3
+```
+
+The range is 0 to 30 whole seconds. Zero skips the timed wait; the indicator and input safeguards
+remain active. The installer stores this setting as a string in
+`mcp.computer.environment.DSH_CU_ANNOUNCE_SECONDS` and preserves it on subsequent installations.
+Use `-AnnounceSeconds 5` to restore the default. For CLI or other MCP hosts, set
+`DSH_CU_ANNOUNCE_SECONDS`; an explicit `overlay --announce N` overrides it for that CLI session.
+Agents should leave this user setting alone while performing desktop tasks.
+
 By default the installer uses `~/.config/opencode/opencode.jsonc` if it exists, otherwise
 `~/.config/opencode/opencode.json`. `XDG_CONFIG_HOME` changes the configuration base directory.
 `OPENCODE_CONFIG` can select the config file. Custom paths are available explicitly:
@@ -70,7 +96,12 @@ See the official [configuration guide](https://opencode.ai/docs/config/).
 
 The installer adds a local plugin URL, a `computer` MCP entry with an absolute Node path, and
 the skill. At startup the plugin adds desktop instructions and binds its own control identity.
+These instructions tell OpenCode when to use desktop tools, how to choose a small observation,
+when to load the detailed skill and how to verify the result. They load automatically in new
+sessions. After setup, ask for your app task in ordinary language.
 Providers, keys, permissions, existing model selection and unrelated servers are preserved.
+An explicit `mcp.computer.enabled: false` and custom timeout are preserved too; restart does not
+silently re-enable desktop tools. Change that setting to true yourself when you want to enable them.
 JSONC comments remain in the backup; the updated file is normalized to JSON.
 
 Backups are stored under `<config directory>\backups\computer-use\<timestamp>`. Repeating an

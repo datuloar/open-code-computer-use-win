@@ -52,8 +52,8 @@ and skill discovery results, OpenCode and Node versions, and any restart still n
 print config values or credentials. Distinguish static validation, actual MCP connection, desktop
 input tests and a model completing a task.
 
-For updates, stay in the existing installation folder and rerun its installer. Before moving to
-another copy, uninstall the old copy with its original path flags. Preserve user edits and other
+For updates, stay in the existing installation folder and rerun its installer. When moving to another copy, run its installer with `-MigrateFrom <previous-checkout>`. It must
+match the previous computer entry; do not overwrite an unrelated server. Preserve user edits and other
 MCP servers. Use the same installer with `-Uninstall` for removal.
 
 ## A prompt users can give a setup agent

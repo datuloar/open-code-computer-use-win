@@ -58,8 +58,8 @@ const region = {
 };
 
 const target = {
-  window: { type: 'string', description: 'part of the window title; default is the foreground window' },
-  pid: { type: 'integer', description: 'process id of the window instead of a title' },
+  window: { type: 'string', description: 'title substring; default foreground' },
+  pid: { type: 'integer', description: 'window process id' },
 };
 
 const point = {
@@ -115,9 +115,14 @@ export const TOOLS = [
   },
   {
     name: 'find',
-    description: 'Controls in a window whose name contains the text, each with a clickable point.',
-    inputSchema: schema({ text: { type: 'string' }, ...target }, ['text']),
-    cli: (args) => ['find', String(args.text), ...targetArgs(args)],
+    description: 'Find controls by name/id. Set details to read one unique control value and state; protected values stay hidden.',
+    inputSchema: schema({ text: { type: 'string' }, ...target, details: { type: 'boolean' },
+      max_chars: { type: 'integer', minimum: 1, maximum: 2000 } }, ['text']),
+    cli: (args) => {
+      if (args.max_chars !== undefined && !args.details) throw new ToolError('max_chars requires details: true');
+      return [args.details ? 'inspect' : 'find', args.text, ...targetArgs(args),
+        ...(args.max_chars !== undefined ? ['--max-chars', String(args.max_chars)] : [])];
+    },
   },
   {
     name: 'tap',
@@ -147,7 +152,7 @@ export const TOOLS = [
   },
   {
     name: 'click',
-    description: 'Click at a screen point.',
+    description: 'Click an observed physical screen point. Prefer tap for a uniquely named control; refresh points after layout changes.',
     inputSchema: schema(
       { ...point, button: { type: 'string', enum: ['left', 'right', 'middle', 'double', 'triple'] } },
       ['x', 'y'],
@@ -191,7 +196,7 @@ export const TOOLS = [
   },
   {
     name: 'type',
-    description: 'Type text into the focused control. A newline is Enter, a tab is Tab.',
+    description: 'Type up to 2000 characters into the focused control; newline is Enter and tab is Tab. Inspect partial text before retrying a failed call.',
     inputSchema: schema({ text: { type: 'string', maxLength: 2000 } }, ['text']),
     gated: true,
     cli: (args) => ['type', String(args.text)],
@@ -225,9 +230,15 @@ export const TOOLS = [
   },
   {
     name: 'wait',
-    description: 'Wait for an animation, a page load or a game round, up to 30 seconds.',
-    inputSchema: schema({ seconds: { type: 'number', minimum: 0, maximum: MAX_WAIT_SECONDS } }, ['seconds']),
+    description: 'Wait up to 30 seconds. With text, poll a named control until it exists or is enabled; no input is sent.',
+    inputSchema: schema({ seconds: { type: 'number', minimum: 0, maximum: MAX_WAIT_SECONDS }, ...target,
+      text: { type: 'string' }, state: { type: 'string', enum: ['exists', 'enabled'] } }, ['seconds']),
     local: async (args, signal) => {
+      if (args.text !== undefined)
+        return runCli(['wait-control', args.text, ...targetArgs(args), '--seconds', String(args.seconds),
+          ...(args.state ? ['--state', args.state] : [])], signal);
+      if (args.window !== undefined || args.pid !== undefined || args.state !== undefined)
+        throw new ToolError('a conditional wait requires text');
       const seconds = Math.max(0, Math.min(MAX_WAIT_SECONDS, Number(args.seconds) || 0));
       await delay(seconds * 1000, undefined, { signal });
       return `WAITED ${seconds}s`;
@@ -267,14 +278,14 @@ function captureConsole() {
   }
 }
 
-async function runCli(argv) {
+async function runCli(argv, signal) {
   const [name, ...args] = argv;
   const command = findCommand(name);
   const previous = sink;
   sink = [];
   try {
     if (commandIsGated(command, args)) requireIndicator();
-    await command.run(args);
+    await command.run(args, { signal });
     return sink.join('\n').trim();
   } finally {
     sink = previous;

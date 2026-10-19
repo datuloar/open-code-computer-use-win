@@ -4,6 +4,7 @@ import {
   COMMANDS,
   commandIsGated,
   findCommand,
+  parseControlArgs,
   parseOverlayFlags,
   parseReadArgs,
   parseShotArgs,
@@ -19,6 +20,23 @@ test('command names are unique, kebab-case and documented for --help', () => {
     assert.equal(typeof command.run, 'function', `${command.name} has no handler`);
     assert.ok(command.summary, `${command.name} has no summary`);
   }
+});
+
+test('control inspection and waits validate their bounds before any backend work', () => {
+  const inspected = parseControlArgs(['Test editor', '--pid', '1234', '--max-chars', '250']);
+  assert.equal(inspected.needle, 'Test editor');
+  assert.equal(inspected.pid, 1234);
+  assert.equal(inspected.maxChars, 250);
+  const waited = parseControlArgs(['Save', '--seconds', '1.5', '--state', 'exists', '--title', 'Test window'], true);
+  assert.equal(waited.seconds, 1.5);
+  assert.equal(waited.state, 'exists');
+  assert.equal(waited.title, 'Test window');
+  for (const value of ['0', '2001', 'bad']) assert.throws(() => parseControlArgs(['Field', '--max-chars', value]), /max chars/);
+  for (const value of ['0', '-1', '31', 'Infinity', 'NaN', ''])
+    assert.throws(() => parseControlArgs(['Field', '--seconds', value], true), /conditional wait seconds/);
+  assert.throws(() => parseControlArgs(['Field', '--state', 'clicked'], true), /control state must be/);
+  assert.throws(() => parseControlArgs(['Field', '--depth', '20']), /documented control flags/);
+  assert.throws(() => parseControlArgs([]), /name of the control/);
 });
 
 test('the help lists every command and no command that does not exist', () => {
@@ -60,7 +78,7 @@ test('key releases are allowed when the indicator is gone, while key presses rem
 });
 
 test('overlay flags parse into announce seconds and the one-shot actions', () => {
-  assert.deepEqual(parseOverlayFlags([]), { announce: 8, quiet: false, hideCursor: false, oneShot: null });
+  assert.deepEqual(parseOverlayFlags([], {}), { announce: 5, quiet: false, hideCursor: false, oneShot: null });
   assert.deepEqual(parseOverlayFlags(['--announce', '0', '--hide-cursor']), {
     announce: 0,
     quiet: false,
@@ -78,6 +96,21 @@ test('overlay rejects nonsense, out-of-range announcements and mixed intents', (
   assert.throws(() => parseOverlayFlags(['--stop', '--restore-cursor']), /not both/);
   assert.throws(() => parseOverlayFlags(['--stop', '--quiet']), /only applies while starting/);
   assert.throws(() => parseOverlayFlags(['--stop', '--hide-cursor']), /only applies while starting/);
+});
+
+test('countdown configuration is validated and explicit flags override it without blocking cleanup', () => {
+  const environment = { DSH_CU_ANNOUNCE_SECONDS: '3' };
+  assert.equal(parseOverlayFlags([], environment).announce, 3);
+  assert.equal(parseOverlayFlags(['--announce', '7'], environment).announce, 7);
+  assert.equal(parseOverlayFlags([], { DSH_CU_ANNOUNCE_SECONDS: '0' }).announce, 0);
+  assert.equal(parseOverlayFlags([], { DSH_CU_ANNOUNCE_SECONDS: '30' }).announce, 30);
+  for (const value of ['bad', '1.5', '', '-1', '31', '9007199254740992']) {
+    const invalid = { DSH_CU_ANNOUNCE_SECONDS: value };
+    assert.throws(() => parseOverlayFlags([], invalid), /DSH_CU_ANNOUNCE_SECONDS must be/);
+    assert.equal(parseOverlayFlags(['--announce', '2'], invalid).announce, 2);
+    assert.equal(parseOverlayFlags(['--stop'], invalid).oneShot, 'stop');
+    assert.equal(parseOverlayFlags(['--restore-cursor'], invalid).oneShot, 'restore-cursor');
+  }
 });
 
 test('shot takes one path, an optional region, and nothing else', () => {

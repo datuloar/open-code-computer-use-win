@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { root } from './backend.js';
 import { configureOpenCode, pluginUrl, SERVER_NAME, SKILL_NAME } from './opencode.js';
@@ -58,7 +58,8 @@ function atomicWrite(file, content) {
   finally { if (existsSync(staged)) unlinkSync(staged); }
 }
 
-export function installOpenCode({ configDir, configPath, node = process.execPath, uninstall = false, model, write = atomicWrite }) {
+export function installOpenCode({ configDir, configPath, node = process.execPath, uninstall = false, model, announceSeconds, migrateFrom, write = atomicWrite }) {
+  if (uninstall && migrateFrom !== undefined) throw new Error('migration cannot be combined with uninstall');
   const directory = resolve(configDir || join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'opencode'));
   const jsonc = join(directory, 'opencode.jsonc');
   const file = resolve(configPath || process.env.OPENCODE_CONFIG || (existsSync(jsonc) ? jsonc : join(directory, 'opencode.json')));
@@ -73,7 +74,20 @@ export function installOpenCode({ configDir, configPath, node = process.execPath
     if (config.plugin) config.plugin = config.plugin.filter((plugin) => !isOurPlugin(plugin));
     if (config.mcp?.[SERVER_NAME]?.command?.[1] === join(root, 'opencode', 'mcp.js')) delete config.mcp[SERVER_NAME];
   } else {
-    configureOpenCode(config, { node });
+    if (migrateFrom !== undefined) {
+      if (typeof migrateFrom !== 'string' || !migrateFrom.trim()) throw new Error('migrate-from needs the previous checkout path');
+      const previousRoot = resolve(migrateFrom);
+      const previousEntry = join(previousRoot, 'opencode', 'mcp.js');
+      const entry = join(root, 'opencode', 'mcp.js');
+      const existing = config.mcp?.[SERVER_NAME];
+      if (existing && existing.command?.[1] !== previousEntry && existing.command?.[1] !== entry)
+        throw new Error('the computer MCP entry does not belong to the specified previous checkout');
+      if (existing?.command?.[1] === previousEntry) existing.command = [node, entry];
+      const previousPlugin = pathToFileURL(join(previousRoot, 'opencode', 'plugin.js')).href;
+      if (config.plugin) config.plugin = config.plugin.filter((plugin) => (Array.isArray(plugin) ? plugin[0] : plugin) !== previousPlugin);
+      if (config.instructions) config.instructions = config.instructions.filter((path) => path !== join(previousRoot, 'opencode', 'INSTRUCTIONS.md'));
+    }
+    configureOpenCode(config, { node, announceSeconds });
     if (model !== undefined) {
       if (typeof model !== 'string' || !/^[^\s/]+\/\S+$/.test(model)) throw new Error('model must be provider/model');
       config.model = model;
@@ -130,11 +144,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     const options = {};
     for (let i = 0; i < args.length; i++) {
       if (args[i] === '--uninstall') options.uninstall = true;
-      else if (['--config-dir', '--config', '--model'].includes(args[i])) {
+      else if (['--config-dir', '--config', '--model', '--announce-seconds', '--migrate-from'].includes(args[i])) {
         const flag = args[i];
         const value = args[++i];
-        if (!value || value.startsWith('--')) throw new Error(`${flag} needs a path`);
-        options[flag === '--config-dir' ? 'configDir' : flag === '--model' ? 'model' : 'configPath'] = value;
+        if (!value || value.startsWith('--')) throw new Error(`${flag} needs a value`);
+        const key = { '--config-dir': 'configDir', '--config': 'configPath', '--model': 'model', '--announce-seconds': 'announceSeconds', '--migrate-from': 'migrateFrom' }[flag];
+        options[key] = value;
       } else throw new Error(`unknown installer argument: ${args[i]}`);
     }
     console.log(JSON.stringify(installOpenCode(options), null, 2));

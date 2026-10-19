@@ -4,8 +4,14 @@ Give OpenCode tools to inspect and operate Windows apps. Read controls through U
 use OCR or screenshots when needed, and send mouse and keyboard input with a visible countdown
 and a physical ESC stop.
 
-The repository includes the OpenCode plugin, MCP server, agent skill and Windows backend.
+This is the standalone [OpenCode repository](https://github.com/datuloar/open-code-computer-use-win).
+It includes its own plugin, MCP server, agent skill and Windows backend. No DSH checkout is required.
 Run it from a clone or an extracted release. No package install, native driver or .NET SDK is required.
+
+The plugin automatically loads a short desktop workflow into OpenCode. The discoverable skill
+adds targeting, input and verification guidance when needed, and a compaction reminder preserves
+the rules in long sessions. Describe the task normally; you do not have to name tools or paste
+a desktop prompt each time.
 
 ![OpenCode countdown and active desktop control](docs/opencode-indicator.png)
 
@@ -39,12 +45,16 @@ updates and removal. Give a setup agent [AGENT_SETUP.md](docs/AGENT_SETUP.md).
 
 Ask OpenCode to inspect a specific app, then describe the change you want. The agent lists
 windows, reads the target, performs an action and inspects the result. The first input displays
-an eight second countdown. Press physical ESC to take back control.
+a five second countdown by default. Press physical ESC to take back control.
+Save a different duration with `install-opencode.ps1 -AnnounceSeconds 3`, then restart OpenCode.
+The supported range is 0 to 30 seconds; zero keeps the indicator and skips the timed wait.
 
 - `computer_ui_tree` and `computer_find` return controls as text with physical pixel coordinates.
 - `computer_tap` clicks a uniquely named control and refuses ambiguous or covered targets.
 - `computer_read_text` uses Windows OCR. `computer_screenshot` returns an image to vision models.
 - `computer_type` preserves Unicode and whitespace without replacing the clipboard.
+- `computer_find` with `details: true` reads a field value and state, with password redaction and
+  explicit truncation. `computer_wait` with text, pid and seconds waits for a named control.
 - `computer_indicator` with `{"action":"stop"}` releases control. Lifecycle hooks also stop
   owned control when the session ends or moves to other kinds of tools.
 
@@ -52,6 +62,9 @@ The primary monitor is supported. UI Automation is not a browser DOM. Secure des
 dialogs are outside this tool's supported input surface. Optional local vision requires a separate
 download through `install-vision.ps1`. A screenshot sent to a cloud model goes to that model provider.
 See [desktop behavior and limits](docs/SAFETY.md).
+
+The [alternatives review](docs/opencode-alternatives-2026-10-18.md) compares pinned GitHub sources
+and explains the changes adopted in 1.4.0. Other projects were reviewed as source, not benchmarked.
 
 ## Verify
 
@@ -74,14 +87,14 @@ for the OpenCode integration test and the limits of the recorded results.
 
 ## Publish and maintain
 
-This folder is ready to become the root of a new GitHub repository. Follow
-[PUBLISHING.md](docs/PUBLISHING.md) to create the first commit, connect your repository and attach
-a release ZIP. GitHub Actions runs static checks and unit tests on pushes and pull requests;
+Follow [PUBLISHING.md](docs/PUBLISHING.md) to build a release ZIP or publish a version tag.
+GitHub Actions runs static checks and unit tests on pushes and pull requests;
 version tags build a ZIP and SHA256 checksum file.
 
 The shared CLI keeps its existing name, `dsh-cu`, and its DSH skill keeps `dsh-computer-use`.
-The OpenCode skill is `opencode-computer-use`; the MCP name is `computer`. These names allow the
-same backend to serve both hosts. Contributors should read [AGENTS.md](AGENTS.md).
+The OpenCode skill is `opencode-computer-use`; the MCP name is `computer`. These internal
+compatibility names do not connect this installation to a DSH checkout. Contributors should
+read [AGENTS.md](AGENTS.md).
 
 ## CLI reference
 
@@ -95,6 +108,8 @@ dsh-cu read [--region <x> <y> <w> <h>] [--lang <tag>] [--json]
 dsh-cu tree [--pid N | --title <text>] [--depth N] [--all] [--json]
 dsh-cu find <text> [--pid N | --title <text>] [--json]
 dsh-cu tap <text> [--pid N | --title <text>]
+dsh-cu inspect <text> [--pid N | --title <text>] [--max-chars N]
+dsh-cu wait-control <text> [--pid N | --title <text>] [--seconds N] [--state exists|enabled]
 dsh-cu move <x> <y>
 dsh-cu click <x> <y> [left|right|middle|double|triple]
 dsh-cu drag <x> <y> <to-x> <to-y>

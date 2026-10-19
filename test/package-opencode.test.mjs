@@ -31,11 +31,12 @@ test('GitHub export contains a complete portable English repository and passes t
   const manifest = JSON.parse(readFileSync(join(result.directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, 'dsh-cu');
   assert.equal(manifest.private, true);
-  assert.equal(manifest.repository, undefined);
+  assert.equal(manifest.repository.url, 'git+https://github.com/datuloar/open-code-computer-use-win.git');
   assert.equal(manifest.dependencies, undefined);
   for (const path of manifest.files) assert.ok(existsSync(join(result.directory, path)), path);
   const inventory = JSON.parse(readFileSync(result.manifest, 'utf8')).files;
   assert.ok(inventory.some((file) => file.path === '.github/workflows/release.yml'));
+  assert.ok(inventory.some((file) => file.path === 'test/opencode-fixture-guard.js'));
   assert.ok(!inventory.some((file) => /(?:^|\/)(?:\.git|node_modules|backups)(?:\/|$)/.test(file.path)));
   for (const entry of inventory) {
     assert.ok(!isAbsolute(entry.path));

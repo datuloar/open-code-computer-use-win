@@ -1,6 +1,6 @@
 {
   "name": "dsh-cu",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Windows desktop tools for OpenCode: UI Automation, OCR, screenshots and gated mouse/keyboard input with a visible ESC indicator.",
   "type": "module",
   "main": "lib/index.js",
@@ -55,6 +55,14 @@
   ],
   "license": "MIT",
   "author": "dsh-computer-use contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datuloar/open-code-computer-use-win.git"
+  },
+  "homepage": "https://github.com/datuloar/open-code-computer-use-win#readme",
+  "bugs": {
+    "url": "https://github.com/datuloar/open-code-computer-use-win/issues"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

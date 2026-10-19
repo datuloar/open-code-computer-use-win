@@ -6,6 +6,7 @@ import { release, tmpdir } from 'node:os';
 import assert from 'node:assert/strict';
 import { checkContract } from './contract.js';
 import { indicatorIsUp, humanStopSeconds } from './backend.js';
+import { DEFAULT_ANNOUNCE_SECONDS } from './settings.js';
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 async function until(check) {
@@ -45,7 +46,7 @@ export async function runSelfTest({ root, cli, exec }) {
     version: JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version,
     sourceSha256: sourceFingerprint(root),
     environment: { platform: process.platform, osRelease: release(), arch: process.arch, node: process.version,
-      theme: process.env.DSH_CU_THEME === 'opencode' ? 'opencode' : 'deepseek' },
+      theme: process.env.DSH_CU_THEME === 'opencode' ? 'opencode' : 'deepseek', announceSeconds: DEFAULT_ANNOUNCE_SECONDS },
     checks: [],
   };
   const saveReport = () => {
@@ -69,12 +70,13 @@ export async function runSelfTest({ root, cli, exec }) {
   };
   const testOwner = `selftest:${process.pid}`;
   const state = (name) => join(tmpdir(), `dsh-cu.${name}`);
-  const callCli = (args) => exec(process.execPath, [cli, ...args], { DSH_CU_OWNER: testOwner });
+  const testEnvironment = { DSH_CU_OWNER: testOwner, DSH_CU_ANNOUNCE_SECONDS: String(DEFAULT_ANNOUNCE_SECONDS) };
+  const callCli = (args) => exec(process.execPath, [cli, ...args], testEnvironment);
   const fixture = spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'test', 'desktop-fixture.ps1'), folder], { stdio: 'ignore', windowsHide: true });
   let fixtureError;
   fixture.on('error', (error) => { fixtureError = error; });
   const server = spawn(process.execPath, [cli, 'mcp'], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true,
-    env: { ...process.env, DSH_CU_OWNER: testOwner } });
+    env: { ...process.env, ...testEnvironment } });
   let sequence = 0;
   let buffer = '';
   let serverError;
@@ -163,7 +165,7 @@ export async function runSelfTest({ root, cli, exec }) {
       assert.throws(() => callCli(['move', '100', '100']), /countdown/);
       assert.throws(() => exec('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'backends', 'windows.ps1'), 'move', '100', '100']), /countdown/);
       await focusing;
-      assert.ok(Date.now() - start >= 8000);
+      assert.ok(Date.now() - start >= DEFAULT_ANNOUNCE_SECONDS * 1000);
       assert.ok(existsSync(state('ready')));
       assert.ok(!existsSync(state('cursor')));
       const elapsed = Date.now() - start;
@@ -203,6 +205,16 @@ export async function runSelfTest({ root, cli, exec }) {
     });
     await check('typing leaves the clipboard sequence unchanged', async () => {
       assert.equal((await fixtureCommand('clipboard')).sequence, clipboardSequence);
+    });
+    await check('UIA inspection verifies the complete typed value without OCR', async () => {
+      const observed = JSON.parse((await tool('find', { pid: target.pid, text: 'Test editor', details: true })).split('\n')[0]);
+      assert.equal(observed.valueStatus, 'available');
+      assert.equal(observed.truncated, false);
+      assert.equal(observed.value.replaceAll('\r', ''), readFileSync(join(folder, 'text.txt'), 'utf8').replaceAll('\r', ''));
+    });
+    await check('tap refuses a disabled exact target instead of its enabled substring', async () => {
+      assert.match(await tool('tap', { pid: target.pid, text: 'Delayed control' }, true), /named control is disabled/);
+      assert.ok(!existsSync(join(folder, 'wrong-delayed-click.txt')));
     });
     await check('a named button click reaches the fixture', async () => {
       await tool('tap', { pid: target.pid, text: 'Test action' });
@@ -255,6 +267,45 @@ export async function runSelfTest({ root, cli, exec }) {
     });
     await check('key releases still work after control stops', () => {
       assert.match(callCli(['key', 'Ctrl', 'up']), /KEY Ctrl up/);
+    });
+    await check('read-only inspection bounds values and hides password fields without starting control', async () => {
+      const inspect = async (text, extra = {}) => JSON.parse((await tool('find', { pid: target.pid, text, details: true, ...extra })).split('\n')[0]);
+      const value = await inspect('Test value');
+      assert.equal(value.value, '  sample "value" \\path  ');
+      assert.equal(value.readOnly, true);
+      assert.equal(value.truncated, false);
+      const shortened = await inspect('Test value', { max_chars: 5 });
+      assert.equal(shortened.value, value.value.slice(0, 5));
+      assert.equal(shortened.truncated, true);
+      const password = await inspect('Test password');
+      assert.equal(password.valueStatus, 'protected');
+      assert.equal(password.value, null);
+      assert.equal((await inspect('Test toggle')).toggle, 'On');
+      assert.equal((await inspect('Missing fixture field')).found, false);
+      assert.match(await tool('find', { pid: target.pid, text: 'Ambiguous target', details: true }, true), /2 controls match/);
+      assert.ok(!indicatorIsUp());
+    });
+    await check('conditional waiting observes readiness without moving the pointer or starting control', async () => {
+      await fixtureCommand('delay-control');
+      const before = callCli(['pos']).split('\n')[0];
+      const waiting = JSON.parse((await tool('wait', { pid: target.pid, text: 'Delayed control', seconds: 5 })).split('\n')[0]);
+      assert.equal(waiting.condition, 'enabled');
+      assert.equal(waiting.observation.control.enabled, true);
+      assert.equal(callCli(['pos']).split('\n')[0], before);
+      assert.ok(!indicatorIsUp());
+      assert.match(await tool('wait', { pid: target.pid, text: 'Missing fixture field', seconds: 0.5 }, true), /timed out/);
+      return { metrics: { waitChecks: waiting.checks, waitForReadyMs: waiting.waitedMs } };
+    });
+    await check('a configured one second countdown completes before control is ready', () => {
+      const start = Date.now();
+      const result = exec(process.execPath, [cli, 'overlay'], { ...testEnvironment, DSH_CU_ANNOUNCE_SECONDS: '1' });
+      assert.match(result, /announced for 1s/);
+      assert.ok(Date.now() - start >= 1000);
+      assert.ok(existsSync(state('ready')));
+      const elapsed = Date.now() - start;
+      callCli(['overlay', '--stop']);
+      assert.ok(!indicatorIsUp());
+      return { metrics: { configuredSeconds: 1, startupWithCountdownMs: elapsed } };
     });
     await check('stopping during the countdown never reports control ready', async () => {
       const starting = tool('indicator', { action: 'start' }, true);
@@ -331,6 +382,8 @@ export async function runSelfTest({ root, cli, exec }) {
       const owner = readFileSync(state('pid'), 'utf8');
       assert.throws(() => exec(process.execPath, [cli, 'overlay', '--announce', '0'], { DSH_CU_OWNER: 'foreign:test' }), /another computer-use client/);
       assert.throws(() => exec(process.execPath, [cli, 'overlay', '--stop'], { DSH_CU_OWNER: 'foreign:test' }), /another computer-use client/);
+      assert.throws(() => exec('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'backends', 'windows.ps1'),
+        'overlay', '-Announce', '0'], { DSH_CU_OWNER: 'foreign:test' }), /another computer-use client/);
       assert.equal(readFileSync(state('pid'), 'utf8'), owner);
       writeFileSync(state('stop'), 'owner foreign:test');
       await sleep(150);

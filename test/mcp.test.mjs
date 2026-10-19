@@ -63,12 +63,25 @@ test('bad arguments fail as a tool error before anything touches the machine', a
     ['type', { text: 'hello', extra: true }, /unknown argument/],
     ['type', { text: 'x'.repeat(2001) }, /at most 2000 characters/],
     ['see', { question: 'x'.repeat(2001) }, /at most 2000 characters/],
+    ['find', { text: 'Field', max_chars: 100 }, /requires details/],
+    ['find', { text: 'Field', details: true, max_chars: 2001 }, /at most 2000/],
+    ['wait', { seconds: 0, text: 'Ready' }, /conditional wait seconds/],
+    ['wait', { seconds: 1, pid: 123 }, /requires text/],
+    ['wait', { seconds: 1, text: 'Ready', pid: 1, window: 'Test' }, /not both/],
   ];
   for (const [name, args, pattern] of cases) {
     const response = await request('tools/call', { name, arguments: args });
     assert.equal(response.result.isError, true, `${name} should fail`);
     assert.match(response.result.content[0].text, pattern);
   }
+});
+
+test('detailed finding uses the same CLI inspection without adding another model tool', () => {
+  const find = TOOLS.find((tool) => tool.name === 'find');
+  assert.deepEqual(find.cli({ text: 'Field', pid: 123, details: true, max_chars: 40 }),
+    ['inspect', 'Field', '--pid', '123', '--max-chars', '40']);
+  assert.deepEqual(find.cli({ text: 'Field' }), ['find', 'Field']);
+  assert.equal(TOOLS.some((tool) => tool.name === 'inspect'), false);
 });
 
 test('wait runs locally and reports how long it waited', async () => {

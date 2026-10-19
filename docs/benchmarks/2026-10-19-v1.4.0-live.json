@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "model": "opencode/deepseek-v4.1-flash-free",
+  "variant": "low",
+  "naturalTask": true,
+  "typed": "OpenCode verified",
+  "tools": [
+    {
+      "name": "skill",
+      "status": "completed"
+    },
+    {
+      "name": "computer_windows",
+      "status": "completed"
+    },
+    {
+      "name": "computer_focus",
+      "status": "completed"
+    },
+    {
+      "name": "computer_find",
+      "status": "completed"
+    },
+    {
+      "name": "computer_tap",
+      "status": "completed"
+    },
+    {
+      "name": "computer_press",
+      "status": "completed"
+    },
+    {
+      "name": "computer_type",
+      "status": "completed"
+    },
+    {
+      "name": "computer_find",
+      "status": "completed"
+    },
+    {
+      "name": "computer_indicator",
+      "status": "completed"
+    }
+  ],
+  "toolCalls": 9,
+  "semanticVerification": true,
+  "refusedToolCalls": 0,
+  "screenshotCalls": 0,
+  "controlStopped": true
+}

@@ -12,3 +12,4 @@ backups/
 .shot.png
 shots/
 .playwright-mcp/
+PACKAGE-MANIFEST.json

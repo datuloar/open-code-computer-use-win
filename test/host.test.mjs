@@ -54,6 +54,41 @@ test('a broken input pipe rejects the command and resets the host', async () => 
   assert.equal(host.child, null);
 });
 
+test('a short call deadline includes cold startup and leaves the next call recoverable', async () => {
+  const stalled = child();
+  const next = child();
+  const children = [stalled, next];
+  let killed = false;
+  stalled.kill = () => { killed = true; };
+  const host = new BackendHost({ command: 'fake', args: [], spawnProcess: () => children.shift(), startTimeoutMs: 1000 });
+  await assert.rejects(host.call(['inspect'], 10), /stopped after/);
+  assert.equal(killed, true);
+  assert.equal(host.ready, null);
+  next.stdin.write = () => queueMicrotask(() => next.stdout.emit('data', 'OK\n\u001eDSH-CU-END 0\n'));
+  const recovered = host.call(['windows'], 1000);
+  await new Promise((done) => setImmediate(done));
+  next.stdout.emit('data', '\u001eDSH-CU-END READY\n');
+  assert.equal(await recovered, 'OK');
+  host.kill();
+});
+
+test('late READY cannot send a command after its deadline before timers are serviced', async () => {
+  const process = child();
+  let writes = 0;
+  process.stdin.write = () => { writes++; };
+  const host = new BackendHost({ command: 'fake', args: [], spawnProcess: () => {
+    queueMicrotask(() => {
+      const until = performance.now() + 15;
+      while (performance.now() < until) {}
+      process.stdout.emit('data', '\u001eDSH-CU-END READY\n');
+    });
+    return process;
+  } });
+  await assert.rejects(host.call(['type', 'must not execute'], 1), /stopped after/);
+  assert.equal(writes, 0);
+  assert.equal(host.child, null);
+});
+
 test('a synchronous spawn failure does not poison the next startup', async () => {
   const next = child();
   let attempts = 0;

@@ -22,7 +22,7 @@ try {
     for ($row = 0; $row -lt 3; $row++) {
         $state = New-Object DshCu.PanelState
         $state.Announcing = $row -eq 0
-        $state.SecondsLeft = 8
+        $state.SecondsLeft = 5
         $state.Remaining = 0.75
         $state.Pulse = 0.5
         $state.ActionOpacity = if ($row -eq 2) { 1 } else { 0 }

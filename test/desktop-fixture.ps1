@@ -24,6 +24,27 @@ $edit.Size = New-Object System.Drawing.Size(900, 320)
 $form.Controls.Add($edit)
 $encoding = New-Object System.Text.UTF8Encoding($false, $false)
 $edit.Add_TextChanged({ [IO.File]::WriteAllText((Join-Path $Folder 'text.txt'), $edit.Text, $encoding) })
+$value = New-Object System.Windows.Forms.TextBox
+$value.AccessibleName = 'Test value'
+$value.ReadOnly = $true
+$value.Text = '  sample "value" \path  '
+$value.Location = New-Object System.Drawing.Point(440, 24)
+$value.Size = New-Object System.Drawing.Size(210, 28)
+$form.Controls.Add($value)
+$password = New-Object System.Windows.Forms.TextBox
+$password.AccessibleName = 'Test password'
+$password.UseSystemPasswordChar = $true
+$password.Text = 'fixture-secret-only'
+$password.Location = New-Object System.Drawing.Point(680, 24)
+$password.Size = New-Object System.Drawing.Size(232, 28)
+$form.Controls.Add($password)
+$toggle = New-Object System.Windows.Forms.CheckBox
+$toggle.AccessibleName = 'Test toggle'
+$toggle.Text = 'State'
+$toggle.Checked = $true
+$toggle.Location = New-Object System.Drawing.Point(330, 24)
+$toggle.Size = New-Object System.Drawing.Size(98, 28)
+$form.Controls.Add($toggle)
 $button = New-Object System.Windows.Forms.Button
 $button.Text = 'Test action'
 $button.AccessibleName = 'Test action'
@@ -31,6 +52,21 @@ $button.Location = New-Object System.Drawing.Point(32, 430)
 $button.Size = New-Object System.Drawing.Size(180, 50)
 $button.Add_Click({ [IO.File]::WriteAllText((Join-Path $Folder 'clicked.txt'), 'clicked') })
 $form.Controls.Add($button)
+$delayed = New-Object System.Windows.Forms.Button
+$delayed.AccessibleName = 'Delayed control'
+$delayed.Text = 'Delayed control'
+$delayed.Enabled = $false
+$delayed.Location = New-Object System.Drawing.Point(32, 490)
+$delayed.Size = New-Object System.Drawing.Size(180, 32)
+$form.Controls.Add($delayed)
+$variant = New-Object System.Windows.Forms.Button
+$variant.AccessibleName = 'Delayed control variant'
+$variant.Text = 'Other action'
+$variant.Location = New-Object System.Drawing.Point(32, 532)
+$variant.Size = New-Object System.Drawing.Size(180, 28)
+$variant.Add_Click({ [IO.File]::WriteAllText((Join-Path $Folder 'wrong-delayed-click.txt'), 'clicked') })
+$form.Controls.Add($variant)
+$script:enableControlAt = $null
 $cover = New-Object System.Windows.Forms.Form
 $cover.Text = 'DSH Test covering window'
 $cover.FormBorderStyle = 'None'
@@ -54,6 +90,10 @@ $timer = New-Object System.Windows.Forms.Timer
 $timer.Interval = 100
 $script:presented = $false
 $timer.Add_Tick({
+    if ($null -ne $script:enableControlAt -and [DateTime]::UtcNow -ge $script:enableControlAt) {
+        $delayed.Enabled = $true
+        $script:enableControlAt = $null
+    }
     if (-not $script:presented) {
         $script:presented = $true
         $form.Hide()
@@ -73,6 +113,10 @@ $timer.Add_Tick({
                     $cover.BringToFront()
                 }
                 'uncover' { $cover.Hide(); $form.Activate() }
+                'delay-control' {
+                    $delayed.Enabled = $false
+                    $script:enableControlAt = [DateTime]::UtcNow.AddMilliseconds(1200)
+                }
                 default { throw 'unknown fixture action' }
             }
         } catch { $response.error = $_.Exception.Message }
