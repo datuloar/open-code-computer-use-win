@@ -15,7 +15,7 @@ import { ToolError } from './tool-error.js';
 const HELP_FLAGS = ['help', '--help', '-h'];
 
 function fail(message) {
-  console.error(`dsh-cu: ${message}`);
+  console.error(`opencode-cu: ${message}`);
   process.exit(1);
 }
 
@@ -23,9 +23,9 @@ async function repairStrandedCursor() {
   if (!isWindows || !cursorMayBeHidden() || indicatorProcessAlive()) return;
   try {
     await ps(['overlay', 'restore-cursor']);
-    console.error('dsh-cu: the pointer had been left hidden by an interrupted indicator — restored it');
+    console.error('opencode-cu: the pointer had been left hidden by an interrupted indicator — restored it');
   } catch {
-    console.error('dsh-cu: the pointer looks hidden and could not be restored — run "dsh-cu overlay --restore-cursor"');
+    console.error('opencode-cu: the pointer looks hidden and could not be restored — run "opencode-cu overlay --restore-cursor"');
   }
 }
 

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readField, readFrontmatter } from '../lib/frontmatter.js';
+import { readField, readFrontmatter } from '../src/frontmatter.js';
 
 test('readFrontmatter returns the block without the fences', () => {
   assert.equal(readFrontmatter('---\nname: a\n---\n\n# body'), 'name: a');
@@ -11,8 +11,8 @@ test('readFrontmatter returns null when a document has none', () => {
 });
 
 test('readField reads a plain scalar', () => {
-  const field = readField('name: dsh-computer-use', 'name');
-  assert.deepEqual(field, { value: 'dsh-computer-use', style: 'plain' });
+  const field = readField('name: opencode-computer-use', 'name');
+  assert.deepEqual(field, { value: 'opencode-computer-use', style: 'plain' });
 });
 
 test('readField strips quotes and keeps their contents', () => {

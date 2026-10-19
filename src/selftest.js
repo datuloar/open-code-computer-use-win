@@ -27,7 +27,7 @@ function sourceFingerprint(root) {
       else if (entry.isFile() && /\.(?:js|mjs|ps1|cs)$/.test(entry.name)) hash.update(`${path}\0`).update(readFileSync(join(root, path)));
     }
   };
-  for (const directory of ['src', 'backends', 'lib', 'test', 'opencode']) visit(directory);
+  for (const directory of ['src', 'backends', 'test', 'opencode']) visit(directory);
   return hash.update(readFileSync(join(root, 'package.json'))).digest('hex');
 }
 
@@ -35,18 +35,18 @@ export async function runSelfTest({ root, cli, exec }) {
   assert.equal(process.platform, 'win32', 'interactive self-test requires Windows');
   assert.ok(!indicatorIsUp(), 'stop the current computer-use session before self-test');
   assert.ok(humanStopSeconds() >= 600, 'the human pressed ESC recently; self-test will not restart control');
-  const folder = mkdtempSync(join(tmpdir(), 'dsh-cu-test-'));
+  const folder = mkdtempSync(join(tmpdir(), 'opencode-cu-test-'));
   const started = performance.now();
   const reportPath = join(folder, 'report.json');
   const report = {
     schemaVersion: 1,
-    suite: 'dsh-cu-desktop',
+    suite: 'opencode-cu-desktop',
     status: 'running',
     startedAt: new Date().toISOString(),
     version: JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version,
     sourceSha256: sourceFingerprint(root),
     environment: { platform: process.platform, osRelease: release(), arch: process.arch, node: process.version,
-      theme: process.env.DSH_CU_THEME === 'opencode' ? 'opencode' : 'deepseek', announceSeconds: DEFAULT_ANNOUNCE_SECONDS },
+      theme: 'opencode', announceSeconds: DEFAULT_ANNOUNCE_SECONDS },
     checks: [],
   };
   const saveReport = () => {
@@ -69,8 +69,8 @@ export async function runSelfTest({ root, cli, exec }) {
     return reply;
   };
   const testOwner = `selftest:${process.pid}`;
-  const state = (name) => join(tmpdir(), `dsh-cu.${name}`);
-  const testEnvironment = { DSH_CU_OWNER: testOwner, DSH_CU_ANNOUNCE_SECONDS: String(DEFAULT_ANNOUNCE_SECONDS) };
+  const state = (name) => join(tmpdir(), `opencode-cu.${name}`);
+  const testEnvironment = { OPENCODE_CU_OWNER: testOwner, OPENCODE_CU_ANNOUNCE_SECONDS: String(DEFAULT_ANNOUNCE_SECONDS) };
   const callCli = (args) => exec(process.execPath, [cli, ...args], testEnvironment);
   const fixture = spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'test', 'desktop-fixture.ps1'), folder], { stdio: 'ignore', windowsHide: true });
   let fixtureError;
@@ -147,7 +147,7 @@ export async function runSelfTest({ root, cli, exec }) {
     });
     const target = JSON.parse(readFileSync(join(folder, 'ready.json'), 'utf8'));
     const init = await rpc('initialize', { protocolVersion: '2025-06-18' });
-    assert.equal(init.result.serverInfo.name, process.env.DSH_CU_THEME === 'opencode' ? 'opencode-computer-use' : 'dsh-cu');
+    assert.equal(init.result.serverInfo.name, 'opencode-computer-use');
     await check('documentation and command surface agree', () => assert.deepEqual(checkContract(root), []));
     await check('input and focus refuse before the indicator starts', () => {
       for (const args of [['move', '100', '100'], ['focus', String(target.pid)]]) assert.throws(() => callCli(args), /indicator is not running/);
@@ -298,7 +298,7 @@ export async function runSelfTest({ root, cli, exec }) {
     });
     await check('a configured one second countdown completes before control is ready', () => {
       const start = Date.now();
-      const result = exec(process.execPath, [cli, 'overlay'], { ...testEnvironment, DSH_CU_ANNOUNCE_SECONDS: '1' });
+      const result = exec(process.execPath, [cli, 'overlay'], { ...testEnvironment, OPENCODE_CU_ANNOUNCE_SECONDS: '1' });
       assert.match(result, /announced for 1s/);
       assert.ok(Date.now() - start >= 1000);
       assert.ok(existsSync(state('ready')));
@@ -380,10 +380,10 @@ export async function runSelfTest({ root, cli, exec }) {
     await check('another MCP client cannot take or stop this desktop session', async () => {
       callCli(['overlay', '--announce', '0']);
       const owner = readFileSync(state('pid'), 'utf8');
-      assert.throws(() => exec(process.execPath, [cli, 'overlay', '--announce', '0'], { DSH_CU_OWNER: 'foreign:test' }), /another computer-use client/);
-      assert.throws(() => exec(process.execPath, [cli, 'overlay', '--stop'], { DSH_CU_OWNER: 'foreign:test' }), /another computer-use client/);
+      assert.throws(() => exec(process.execPath, [cli, 'overlay', '--announce', '0'], { OPENCODE_CU_OWNER: 'foreign:test' }), /another computer-use client/);
+      assert.throws(() => exec(process.execPath, [cli, 'overlay', '--stop'], { OPENCODE_CU_OWNER: 'foreign:test' }), /another computer-use client/);
       assert.throws(() => exec('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'backends', 'windows.ps1'),
-        'overlay', '-Announce', '0'], { DSH_CU_OWNER: 'foreign:test' }), /another computer-use client/);
+        'overlay', '-Announce', '0'], { OPENCODE_CU_OWNER: 'foreign:test' }), /another computer-use client/);
       assert.equal(readFileSync(state('pid'), 'utf8'), owner);
       writeFileSync(state('stop'), 'owner foreign:test');
       await sleep(150);

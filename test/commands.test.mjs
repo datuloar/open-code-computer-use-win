@@ -43,10 +43,10 @@ test('the help lists every command and no command that does not exist', () => {
   const help = renderHelp();
   const names = new Set(COMMANDS.map((command) => command.name));
   for (const name of names) {
-    assert.ok(help.includes(`dsh-cu ${name}`), `${name} is missing from --help`);
+    assert.ok(help.includes(`opencode-cu ${name}`), `${name} is missing from --help`);
   }
-  for (const [, mentioned] of help.matchAll(/dsh-cu ([a-z][a-z-]*)/g)) {
-    assert.ok(names.has(mentioned), `--help mentions "dsh-cu ${mentioned}", which does not exist`);
+  for (const [, mentioned] of help.matchAll(/opencode-cu ([a-z][a-z-]*)/g)) {
+    assert.ok(names.has(mentioned), `--help mentions "opencode-cu ${mentioned}", which does not exist`);
   }
 });
 
@@ -99,14 +99,14 @@ test('overlay rejects nonsense, out-of-range announcements and mixed intents', (
 });
 
 test('countdown configuration is validated and explicit flags override it without blocking cleanup', () => {
-  const environment = { DSH_CU_ANNOUNCE_SECONDS: '3' };
+  const environment = { OPENCODE_CU_ANNOUNCE_SECONDS: '3' };
   assert.equal(parseOverlayFlags([], environment).announce, 3);
   assert.equal(parseOverlayFlags(['--announce', '7'], environment).announce, 7);
-  assert.equal(parseOverlayFlags([], { DSH_CU_ANNOUNCE_SECONDS: '0' }).announce, 0);
-  assert.equal(parseOverlayFlags([], { DSH_CU_ANNOUNCE_SECONDS: '30' }).announce, 30);
+  assert.equal(parseOverlayFlags([], { OPENCODE_CU_ANNOUNCE_SECONDS: '0' }).announce, 0);
+  assert.equal(parseOverlayFlags([], { OPENCODE_CU_ANNOUNCE_SECONDS: '30' }).announce, 30);
   for (const value of ['bad', '1.5', '', '-1', '31', '9007199254740992']) {
-    const invalid = { DSH_CU_ANNOUNCE_SECONDS: value };
-    assert.throws(() => parseOverlayFlags([], invalid), /DSH_CU_ANNOUNCE_SECONDS must be/);
+    const invalid = { OPENCODE_CU_ANNOUNCE_SECONDS: value };
+    assert.throws(() => parseOverlayFlags([], invalid), /OPENCODE_CU_ANNOUNCE_SECONDS must be/);
     assert.equal(parseOverlayFlags(['--announce', '2'], invalid).announce, 2);
     assert.equal(parseOverlayFlags(['--stop'], invalid).oneShot, 'stop');
     assert.equal(parseOverlayFlags(['--restore-cursor'], invalid).oneShot, 'restore-cursor');

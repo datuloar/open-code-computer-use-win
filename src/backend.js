@@ -9,7 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export const root = resolve(here, '..');
 
-export const visionHome = () => join(process.env.LOCALAPPDATA || tmpdir(), 'dsh-cu', 'vision');
+export const visionHome = () => join(process.env.LOCALAPPDATA || tmpdir(), 'opencode-cu', 'vision');
 
 export async function startVisionServer() {
   const folder = visionHome();
@@ -19,8 +19,8 @@ export async function startVisionServer() {
   const log = openSync(join(folder, 'server.log'), 'a');
   try {
     const child = spawn(executable, ['-m', join(folder, 'model.gguf'), '--mmproj', join(folder, 'mmproj.gguf'),
-      '--host', '127.0.0.1', '--port', '19471', '-ngl', '99', '-c', '8192', '-np', '1',
-      '--alias', 'dsh-vision', '--jinja', '--sleep-idle-seconds', '300'], { detached: true, windowsHide: true, stdio: ['ignore', log, log] });
+      '--host', '127.0.0.1', '--port', '19472', '-ngl', '99', '-c', '8192', '-np', '1',
+      '--alias', 'opencode-vision', '--jinja', '--sleep-idle-seconds', '300'], { detached: true, windowsHide: true, stdio: ['ignore', log, log] });
     await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
     child.unref();
   } finally { closeSync(log); }
@@ -94,7 +94,7 @@ function backendFailure(error, timeoutMs) {
 }
 
 function execThroughFile(file, args, extraEnv, timeoutMs) {
-  const capture = temp(`dsh-cu.capture-${process.pid}`);
+  const capture = temp(`opencode-cu.capture-${process.pid}`);
   const descriptor = openSync(capture, 'w+');
   let status = 0;
   try {
@@ -130,7 +130,7 @@ function removeQuietly(path) {
 
 export function touch() {
   try {
-    writeFileSync(temp('dsh-cu.touch'), new Date().toISOString());
+    writeFileSync(temp('opencode-cu.touch'), new Date().toISOString());
   } catch {
     return;
   }
@@ -139,7 +139,7 @@ export function touch() {
 let host = null;
 
 export function powershell() {
-  return process.env.DSH_CU_POWERSHELL || 'powershell';
+  return process.env.OPENCODE_CU_POWERSHELL || 'powershell';
 }
 
 export function serveCommand() {
@@ -159,11 +159,11 @@ export async function ps(args, timeoutMs = BACKEND_TIMEOUT_MS) {
     );
   }
   if (host) return host.call(args, timeoutMs);
-  return exec(powershell(), POWERSHELL_FLAGS, { DSH_CU_ARGV: payload }, timeoutMs);
+  return exec(powershell(), POWERSHELL_FLAGS, { OPENCODE_CU_ARGV: payload }, timeoutMs);
 }
 
 export function indicatorIsUp() {
-  return ageSeconds('dsh-cu.alive') < FRESH_SECONDS;
+  return ageSeconds('opencode-cu.alive') < FRESH_SECONDS;
 }
 
 export function indicatorProcessAlive() {
@@ -179,7 +179,7 @@ export function indicatorProcessAlive() {
 
 function indicatorPid() {
   try {
-    const recorded = Number.parseInt(readFileSync(temp('dsh-cu.pid'), 'utf8').trim().split(/\s+/)[0], 10);
+    const recorded = Number.parseInt(readFileSync(temp('opencode-cu.pid'), 'utf8').trim().split(/\s+/)[0], 10);
     return Number.isInteger(recorded) && recorded > 0 ? recorded : null;
   } catch {
     return null;
@@ -187,24 +187,24 @@ function indicatorPid() {
 }
 
 export function brokerIsUp() {
-  return ageSeconds('dsh-cu.broker.ready') < FRESH_SECONDS;
+  return ageSeconds('opencode-cu.broker.ready') < FRESH_SECONDS;
 }
 
 export function humanStopSeconds() {
-  return ageSeconds('dsh-cu.cancelled');
+  return ageSeconds('opencode-cu.cancelled');
 }
 
 export function forgetHumanStop() {
-  removeQuietly(temp('dsh-cu.cancelled'));
+  removeQuietly(temp('opencode-cu.cancelled'));
 }
 
 export function cursorMayBeHidden() {
-  return Number.isFinite(ageSeconds('dsh-cu.cursor'));
+  return Number.isFinite(ageSeconds('opencode-cu.cursor'));
 }
 
 export function requireIndicator() {
-  if (process.env.DSH_CU_ALLOW_NO_INDICATOR === '1') return;
-  if (indicatorIsUp() && process.env.DSH_CU_OWNER && indicatorOwner() !== process.env.DSH_CU_OWNER)
+  if (process.env.OPENCODE_CU_ALLOW_NO_INDICATOR === '1') return;
+  if (indicatorIsUp() && process.env.OPENCODE_CU_OWNER && indicatorOwner() !== process.env.OPENCODE_CU_OWNER)
     throw new ToolError('another computer-use client owns the desktop; wait for it to stop');
   if (indicatorIsUp() && indicatorProcessAlive() && humanStopSeconds() >= 600) {
     if (indicatorReady()) return;
@@ -212,27 +212,27 @@ export function requireIndicator() {
   }
   throw new ToolError(
     'the on-screen indicator is not running, so the human cannot see or stop this.\n' +
-      'Start it with "dsh-cu overlay" first, or set DSH_CU_ALLOW_NO_INDICATOR=1 to override.',
+      'Start it with "opencode-cu overlay" first, or set OPENCODE_CU_ALLOW_NO_INDICATOR=1 to override.',
   );
 }
 
 export function indicatorReady() {
   try {
-    const owner = readFileSync(temp('dsh-cu.pid'), 'utf8').trim();
-    return owner.length > 0 && readFileSync(temp('dsh-cu.ready'), 'utf8').trim() === owner;
+    const owner = readFileSync(temp('opencode-cu.pid'), 'utf8').trim();
+    return owner.length > 0 && readFileSync(temp('opencode-cu.ready'), 'utf8').trim() === owner;
   } catch {
     return false;
   }
 }
 
 export function indicatorOwner() {
-  try { return readFileSync(temp('dsh-cu.owner'), 'utf8').trim(); }
+  try { return readFileSync(temp('opencode-cu.owner'), 'utf8').trim(); }
   catch { return ''; }
 }
 
 export function requestIndicatorStop(owner) {
   if (!owner || indicatorOwner() !== owner) return false;
-  try { writeFileSync(temp('dsh-cu.stop'), `owner ${owner}`); return true; }
+  try { writeFileSync(temp('opencode-cu.stop'), `owner ${owner}`); return true; }
   catch { return false; }
 }
 
@@ -243,8 +243,8 @@ export function checkedOutput(output) {
 }
 
 function answerFromBroker(args, timeoutMs) {
-  const requestFile = temp(`dsh-cu.broker.req.${process.pid}`);
-  const responseFile = temp(`dsh-cu.broker.res.${process.pid}`);
+  const requestFile = temp(`opencode-cu.broker.req.${process.pid}`);
+  const responseFile = temp(`opencode-cu.broker.res.${process.pid}`);
   const stagedFile = `${requestFile}.tmp`;
   removeQuietly(responseFile);
   try {

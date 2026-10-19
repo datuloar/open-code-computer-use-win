@@ -1,38 +1,25 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public static class Theme
 {
     public const int TickMs = 30;
 
-    public static readonly bool OpenCode = string.Equals(
-        Environment.GetEnvironmentVariable("DSH_CU_THEME"), "opencode", StringComparison.OrdinalIgnoreCase);
-    public static readonly string AppName = OpenCode ? "OpenCode" : "DeepSeek";
-    public static readonly int PanelAlpha = OpenCode ? 255 : 238;
-    public static readonly double PanelRadius = OpenCode ? 6 : 22;
-    public static readonly Color Ink = OpenCode ? Color.FromArgb(238, 238, 238) : Color.FromArgb(236, 240, 250);
-    public static readonly Color InkDim = OpenCode ? Color.FromArgb(170, 170, 170) : Color.FromArgb(150, 159, 182);
-    public static readonly Color Accent = OpenCode ? Color.FromArgb(250, 178, 131) : Color.FromArgb(96, 126, 255);
-    public static readonly Color Warn = OpenCode ? Color.FromArgb(245, 167, 66) : Color.FromArgb(255, 176, 72);
-    public static readonly Color PanelTop = OpenCode ? Color.FromArgb(20, 20, 20) : Color.FromArgb(33, 36, 48);
-    public static readonly Color PanelBottom = OpenCode ? PanelTop : Color.FromArgb(17, 19, 27);
-    public static readonly Color FrameCore = OpenCode ? Accent : Color.FromArgb(188, 208, 255);
-    public static readonly Color Hairline = OpenCode ? Color.FromArgb(72, 72, 72) : Color.FromArgb(52, 255, 255, 255);
+    public static readonly string AppName = "OpenCode";
+    public static readonly int PanelAlpha = 255;
+    public static readonly double PanelRadius = 6;
+    public static readonly Color Ink = Color.FromArgb(238, 238, 238);
+    public static readonly Color InkDim = Color.FromArgb(170, 170, 170);
+    public static readonly Color Accent = Color.FromArgb(250, 178, 131);
+    public static readonly Color Warn = Color.FromArgb(245, 167, 66);
+    public static readonly Color PanelTop = Color.FromArgb(20, 20, 20);
+    public static readonly Color PanelBottom = PanelTop;
+    public static readonly Color FrameCore = Accent;
+    public static readonly Color Hairline = Color.FromArgb(72, 72, 72);
     public static readonly Color Shadow = Color.FromArgb(0, 0, 0);
 
-    private static readonly string[] Preferred = OpenCode ? new string[] { "Cascadia Mono", "Consolas" } : new string[]
-    {
-        "Segoe UI Variable Text",
-        "Segoe UI",
-        "Tahoma",
-        "Arial",
-    };
-
-    private static readonly string[] PreferredStrong = OpenCode ? new string[0] : new string[]
-    {
-        "Segoe UI Semibold",
-        "Segoe UI Variable Text Semibold",
-    };
+    private static readonly string[] Preferred = new string[] { "Cascadia Mono", "Consolas" };
+    private static readonly string[] PreferredStrong = new string[0];
 
     private static readonly float ScaleFactor;
     private static readonly string Family;
@@ -53,7 +40,7 @@ public static class Theme
     {
         try
         {
-            string raw = Environment.GetEnvironmentVariable("DSH_CU_UI_SCALE");
+            string raw = Environment.GetEnvironmentVariable("OPENCODE_CU_UI_SCALE");
             if (string.IsNullOrEmpty(raw)) return 1f;
             float parsed;
             if (float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out parsed) && parsed > 0)

@@ -8,7 +8,7 @@ import { humanStopSeconds, indicatorIsUp, indicatorOwner, requestIndicatorStop, 
 
 assert.ok(!indicatorIsUp(), 'stop the current computer-use session before this test');
 assert.ok(humanStopSeconds() >= 600, 'physical ESC recently stopped control; this test will not resume it');
-const folder = mkdtempSync(join(tmpdir(), 'dsh-cu-opencode-live-'));
+const folder = mkdtempSync(join(tmpdir(), 'opencode-cu-opencode-live-'));
 console.log(`live test artifacts: ${folder}`);
 const fixture = spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'test', 'desktop-fixture.ps1'), folder], {
   stdio: 'ignore', windowsHide: true,

@@ -23,19 +23,17 @@ For operating the desktop, read [opencode/SKILL.md](opencode/SKILL.md).
 
 ## Required rules
 
-- Maintain this product in `datuloar/open-code-computer-use-win` and its own checkout. Do not push
-  OpenCode integration changes to the DeepSeek Harness repository or reference its local files.
+- Maintain this product in `datuloar/open-code-computer-use-win` and its own checkout. Use its own source, installation paths, settings and release pipeline.
 
 - Do not add code comments in JS, C#, PowerShell or YAML. Put explanations in documentation.
-- Keep the CLI and package name `dsh-cu`, DSH skill `dsh-computer-use`, OpenCode skill
-  `opencode-computer-use` and MCP entry `computer` consistent with their contracts.
-- Distribute the repository and release ZIP. Do not add package registry publishing or runtime
-  dependencies. `package.json` retains DSH compatibility; its main export is not the OpenCode entry.
-- `src/commands.js` is the single command table. Update the DSH skill when adding a command.
-  The package builder generates the README command reference. Run `node src/verify.js`.
+- The package is `opencode-computer-use`, its native entry is `opencode/plugin.js`, the CLI is
+  `opencode-cu`, the skill is `opencode-computer-use` and the MCP entry is `computer`.
+- Distribute the repository and release ZIP without registry publication or runtime dependencies.
+- `src/commands.js` is the single CLI command table. The package builder generates the README
+  reference. Keep runtime guidance in `opencode/SKILL.md` and run `node src/verify.js`.
 - Input must wait for the visible countdown and valid owner/readiness state. Do not bypass physical
   ESC, share another client's owner, or resume because a cancellation timer expired.
-- The countdown defaults to five seconds. Preserve the user's `DSH_CU_ANNOUNCE_SECONDS` setting
+- The countdown defaults to five seconds. Preserve the user's `OPENCODE_CU_ANNOUNCE_SECONDS` setting
   on reinstall; explicit CLI `--announce` overrides it. Invalid settings must still allow cleanup.
 - Releases must work after the gate closes. Never retry a broker request that was already taken.
   Partial input must be observed before a retry.
@@ -46,7 +44,7 @@ For operating the desktop, read [opencode/SKILL.md](opencode/SKILL.md).
 - Inspect values only after non-password metadata is confirmed; preserve whitespace, null states
   and truncation. Exact names precede enabled filtering. Conditional waits remain read-only,
   deadline bounded and cancellable; timeout or ambiguity must never become ready.
-- Use `DSH_CU_ARGV` JSON for backend arguments. Never turn typed text into PowerShell parameters.
+- Use `OPENCODE_CU_ARGV` JSON for backend arguments. Never turn typed text into PowerShell parameters.
 - State reads race with cleanup. Treat missing or unreadable state as normal. Never stop a process
   by PID alone; preserve process type and start-time verification.
 - Keep owner-bound stop requests, startup and lifetime mutexes, atomic broker files, backend
@@ -68,7 +66,7 @@ For operating the desktop, read [opencode/SKILL.md](opencode/SKILL.md).
 ## Verification
 
 Run `node src/verify.js` and `node test/run.mjs` after relevant changes. The unit runner imports
-tests in process because the original host may restrict child-process pipes.
+tests in process.
 
 Desktop self-test controls only `test/desktop-fixture.ps1`. Never inject test input into the
 user's current app, replace the clipboard, or kill editors by process name. An unavailable or

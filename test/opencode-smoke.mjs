@@ -9,7 +9,7 @@ import { installOpenCode } from '../src/install-opencode.js';
 
 assert.ok(!indicatorIsUp(), 'stop the current computer-use session before this test');
 assert.ok(humanStopSeconds() >= 600, 'physical ESC recently stopped control; this test will not resume it');
-const folder = mkdtempSync(join(tmpdir(), 'dsh-cu-opencode-smoke-'));
+const folder = mkdtempSync(join(tmpdir(), 'opencode-cu-opencode-smoke-'));
 const configDir = join(folder, 'config', 'opencode');
 const installed = installOpenCode({ configDir, configPath: join(configDir, 'opencode.json') });
 console.log(`OpenCode smoke artifacts: ${folder}`);
@@ -48,7 +48,7 @@ const server = createServer(async (request, response) => {
       if (step === 3) {
         owner = indicatorOwner();
         assert.match(owner, /^opencode:/);
-        assert.ok(existsSync(join(tmpdir(), 'dsh-cu.ready')), 'countdown must finish before the next tool');
+        assert.ok(existsSync(join(tmpdir(), 'opencode-cu.ready')), 'countdown must finish before the next tool');
       }
       if (step === 4) {
         stoppedBeforeFinal = !indicatorIsUp() && indicatorOwner() !== owner;

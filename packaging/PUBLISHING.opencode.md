@@ -2,7 +2,7 @@
 
 The maintained repository is [datuloar/open-code-computer-use-win](https://github.com/datuloar/open-code-computer-use-win).
 It includes source, English documentation, tests, MIT license and GitHub Actions workflows.
-The internal CLI keeps `dsh-cu` for compatibility. Keep OpenCode releases in this repository.
+The CLI is `opencode-cu`, and the package root exports the native OpenCode plugin. Keep OpenCode releases in this repository.
 
 ## Publish a fork or a clean export
 

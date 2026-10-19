@@ -5,7 +5,7 @@ use OCR or screenshots when needed, and send mouse and keyboard input with a vis
 and a physical ESC stop.
 
 This is the standalone [OpenCode repository](https://github.com/datuloar/open-code-computer-use-win).
-It includes its own plugin, MCP server, agent skill and Windows backend. No DSH checkout is required.
+It includes its own plugin, MCP server, agent skill and Windows backend.
 Run it from a clone or an extracted release. No package install, native driver or .NET SDK is required.
 
 The plugin automatically loads a short desktop workflow into OpenCode. The discoverable skill
@@ -64,7 +64,7 @@ download through `install-vision.ps1`. A screenshot sent to a cloud model goes t
 See [desktop behavior and limits](docs/SAFETY.md).
 
 The [alternatives review](docs/opencode-alternatives-2026-10-18.md) compares pinned GitHub sources
-and explains the changes adopted in 1.4.0. Other projects were reviewed as source, not benchmarked.
+and explains the changes adopted in 1.0.0. Other projects were reviewed as source, not benchmarked.
 
 ## Verify
 
@@ -76,9 +76,7 @@ node test/run.mjs
 These checks do not drive the desktop. For a real input test in a dedicated fixture window:
 
 ```powershell
-$env:DSH_CU_THEME = 'opencode'
 node src/cli.js self-test
-Remove-Item Env:\DSH_CU_THEME
 ```
 
 The fixture must stay visible and accept input. It saves `report.json` and screenshots in its
@@ -91,10 +89,9 @@ Follow [PUBLISHING.md](docs/PUBLISHING.md) to build a release ZIP or publish a v
 GitHub Actions runs static checks and unit tests on pushes and pull requests;
 version tags build a ZIP and SHA256 checksum file.
 
-The shared CLI keeps its existing name, `dsh-cu`, and its DSH skill keeps `dsh-computer-use`.
-The OpenCode skill is `opencode-computer-use`; the MCP name is `computer`. These internal
-compatibility names do not connect this installation to a DSH checkout. Contributors should
-read [AGENTS.md](AGENTS.md).
+The package and skill are `opencode-computer-use`, the CLI is `opencode-cu`, and the MCP name
+is `computer`. The root package export is the native OpenCode plugin. Contributors should read
+[AGENTS.md](AGENTS.md).
 
 ## CLI reference
 
@@ -105,5 +102,4 @@ for the shared CLI. The command list below is generated from `src/commands.js` d
 
 ## License
 
-MIT. See [LICENSE](LICENSE). This is an independent integration built on the shared
-[dsh-computer-use-win](https://github.com/datuloar/dsh-computer-use-win) backend.
+MIT. See [LICENSE](LICENSE).

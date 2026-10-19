@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param()
 $ErrorActionPreference = 'Stop'
-$folder = Join-Path $env:LOCALAPPDATA 'dsh-cu\vision'
+$folder = Join-Path $env:LOCALAPPDATA 'opencode-cu\vision'
 New-Item -ItemType Directory -Force -Path $folder | Out-Null
 $files = @(
     @{ Name = 'runtime.zip'; Url = 'https://github.com/ggml-org/llama.cpp/releases/download/b11076/llama-b11076-bin-win-vulkan-x64.zip'; Hash = '7d88a85aeb2eb6d196fe3ccee6b8ef138dbc0b88b90c185a42180e88c90eea41' },
@@ -17,4 +17,4 @@ foreach ($file in $files) {
     if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $file.Hash) { throw ('Checksum mismatch: ' + $file.Name) }
 }
 Expand-Archive -LiteralPath (Join-Path $folder 'runtime.zip') -DestinationPath (Join-Path $folder 'runtime') -Force
-Write-Host 'Local vision installed. It starts automatically on the first dsh-cu see or MCP see call.'
+Write-Host 'Local vision installed. It starts automatically on the first opencode-cu see or MCP see call.'

@@ -7,7 +7,7 @@ const request = (method, params, id = 1) => handle({ jsonrpc: '2.0', id, method,
 test('initialize answers with the requested protocol and the server name', async () => {
   const response = await request('initialize', { protocolVersion: '2025-03-26', capabilities: {} });
   assert.equal(response.result.protocolVersion, '2025-03-26');
-  assert.equal(response.result.serverInfo.name, 'dsh-cu');
+  assert.equal(response.result.serverInfo.name, 'opencode-computer-use');
   assert.ok(response.result.capabilities.tools);
   assert.ok(response.result.instructions.length > 40);
 });

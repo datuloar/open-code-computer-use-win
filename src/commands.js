@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, statSync, unlinkSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -103,7 +104,7 @@ function screenshotPath(target) {
     mkdirSync(dirname(file), { recursive: true });
     return file;
   }
-  const folder = temp('dsh-computer-use');
+  const folder = temp('opencode-computer-use');
   mkdirSync(folder, { recursive: true });
   return join(folder, `shot-${Date.now()}.png`);
 }
@@ -392,7 +393,7 @@ export function parseOverlayFlags(args, environment = process.env) {
   }
   return {
     announce: announce ?? (oneShotFlags.length ? DEFAULT_ANNOUNCE_SECONDS
-      : parseAnnounceSeconds(environment.DSH_CU_ANNOUNCE_SECONDS, 'DSH_CU_ANNOUNCE_SECONDS')),
+      : parseAnnounceSeconds(environment.OPENCODE_CU_ANNOUNCE_SECONDS, 'OPENCODE_CU_ANNOUNCE_SECONDS')),
     quiet: flags.has('--quiet'),
     hideCursor: flags.has('--hide-cursor'),
     oneShot: oneShotFlags.length === 1 ? ONE_SHOT_FLAGS[oneShotFlags[0]] : null,
@@ -459,7 +460,7 @@ async function describeCursor() {
   if (cursorMayBeHidden()) {
     return indicatorIsUp()
       ? 'replaced by the marker (--hide-cursor)'
-      : 'HIDDEN — the next command repairs it, or run "dsh-cu overlay --restore-cursor"';
+      : 'HIDDEN — the next command repairs it, or run "opencode-cu overlay --restore-cursor"';
   }
   try {
     const state = await ps(['cursor-state']);
@@ -482,9 +483,9 @@ async function describeDisplay() {
 }
 
 function describeSkillInstall() {
-  if (!process.env.DSH_HOME) return 'DSH_HOME is not set';
-  const path = join(process.env.DSH_HOME, 'skills', 'dsh-computer-use', 'SKILL.md');
-  return existsSync(path) ? `installed (${path})` : `not installed (${path}) — run install.ps1`;
+  const config = process.env.XDG_CONFIG_HOME || join(homedir(), '.config');
+  const path = join(config, 'opencode', 'skills', 'opencode-computer-use', 'SKILL.md');
+  return existsSync(path) ? `installed (${path})` : `not installed (${path}) - run install-opencode.ps1`;
 }
 
 async function runMcp() {
@@ -665,7 +666,7 @@ export const COMMANDS = [
   {
     name: 'mcp',
     args: '',
-    summary: 'serve every command as MCP tools over stdio (DeepSeek Harness, Claude Code, opencode, ...)',
+    summary: 'serve OpenCode desktop tools over MCP stdio',
     run: runMcp,
   },
   {
@@ -685,18 +686,18 @@ export const COMMANDS = [
 ];
 
 export function renderHelp() {
-  const lines = COMMANDS.map((command) => `  dsh-cu ${command.name} ${command.args}`.trimEnd());
+  const lines = COMMANDS.map((command) => `  opencode-cu ${command.name} ${command.args}`.trimEnd());
   const width = Math.max(...lines.map((line) => line.length));
   const rows = COMMANDS.map(
     (command, index) => `${lines[index]}${' '.repeat(width - lines[index].length + 4)}${command.summary}`,
   );
-  return `dsh-cu — computer use for agents (Windows)
+  return `opencode-cu — computer use for agents (Windows)
 
 ${rows.join('\n')}
 
 Also:
-  dsh-cu overlay --stop                     stop the indicator, restore the cursor
-  dsh-cu overlay --restore-cursor           emergency cursor rescue
+  opencode-cu overlay --stop                     stop the indicator, restore the cursor
+  opencode-cu overlay --restore-cursor           emergency cursor rescue
 
 Nothing to install: the backend compiles its own C# with the .NET Framework that ships with
 Windows. Elevated windows (UIPI) and the secure desktop (UAC, lock screen) are unreachable.`;
@@ -704,7 +705,7 @@ Windows. Elevated windows (UIPI) and the secure desktop (UAC, lock screen) are u
 
 export function findCommand(name) {
   const command = COMMANDS.find((entry) => entry.name === name);
-  if (!command) throw new ToolError(`unknown command "${name}" — run dsh-cu --help`);
+  if (!command) throw new ToolError(`unknown command "${name}" — run opencode-cu --help`);
   return command;
 }
 

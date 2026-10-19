@@ -11,7 +11,7 @@ using System.Text;
 using System.Windows.Automation;
 using System.Windows.Forms;
 
-namespace DshCu
+namespace OpenCodeCu
 {
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT { public int X; public int Y; }
@@ -107,7 +107,7 @@ public static class Native
     public static extern bool BringWindowToTop(IntPtr hWnd);
 
     [DllImport("user32.dll")]
-    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    public static extern bool ShowWindow(IntPtr hWnd, int command);
 
     [DllImport("user32.dll")]
     public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);

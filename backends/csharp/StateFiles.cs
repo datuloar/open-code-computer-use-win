@@ -1,29 +1,29 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public static class StateFiles
 {
-    public static readonly string Heartbeat = InTemp("dsh-cu.alive");
+    public static readonly string Heartbeat = InTemp("opencode-cu.alive");
 
-    public static readonly string Ready = InTemp("dsh-cu.ready");
+    public static readonly string Ready = InTemp("opencode-cu.ready");
 
-    public static readonly string Stop = InTemp("dsh-cu.stop");
+    public static readonly string Stop = InTemp("opencode-cu.stop");
 
-    public static readonly string Touch = InTemp("dsh-cu.touch");
+    public static readonly string Touch = InTemp("opencode-cu.touch");
 
-    public static readonly string Pid = InTemp("dsh-cu.pid");
+    public static readonly string Pid = InTemp("opencode-cu.pid");
 
-    public static readonly string Owner = InTemp("dsh-cu.owner");
+    public static readonly string Owner = InTemp("opencode-cu.owner");
 
-    public static readonly string CursorHidden = InTemp("dsh-cu.cursor");
+    public static readonly string CursorHidden = InTemp("opencode-cu.cursor");
 
-    public static readonly string Action = InTemp("dsh-cu.action");
+    public static readonly string Action = InTemp("opencode-cu.action");
 
-    public static readonly string HumanStop = InTemp("dsh-cu.cancelled");
+    public static readonly string HumanStop = InTemp("opencode-cu.cancelled");
 
-    public static readonly string BrokerReady = InTemp("dsh-cu.broker.ready");
+    public static readonly string BrokerReady = InTemp("opencode-cu.broker.ready");
 
-    public static readonly string BrokerStop = InTemp("dsh-cu.broker.stop");
+    public static readonly string BrokerStop = InTemp("opencode-cu.broker.stop");
 
     public static string InTemp(string name)
     {
@@ -77,8 +77,8 @@ public static class StateFiles
 
     public static void RequireInput()
     {
-        if (Environment.GetEnvironmentVariable("DSH_CU_ALLOW_NO_INDICATOR") == "1") return;
-        string client = Environment.GetEnvironmentVariable("DSH_CU_OWNER");
+        if (Environment.GetEnvironmentVariable("OPENCODE_CU_ALLOW_NO_INDICATOR") == "1") return;
+        string client = Environment.GetEnvironmentVariable("OPENCODE_CU_OWNER");
         if (!string.IsNullOrEmpty(client) && Read(Owner) != client)
             throw new InvalidOperationException("another computer-use client owns the desktop; wait for it to stop");
         string owner = Read(Pid);

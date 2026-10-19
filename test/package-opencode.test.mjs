@@ -9,7 +9,7 @@ import { checkContract } from '../src/contract.js';
 
 const folders = [];
 function fixture() {
-  const folder = mkdtempSync(join(tmpdir(), 'dsh-cu-package-'));
+  const folder = mkdtempSync(join(tmpdir(), 'opencode-cu-package-'));
   folders.push(folder);
   return folder;
 }
@@ -17,7 +17,7 @@ function fixture() {
 after(() => {
   for (const folder of folders) {
     assert.equal(dirname(resolve(folder)), resolve(tmpdir()));
-    assert.ok(basename(folder).startsWith('dsh-cu-package-'));
+    assert.ok(basename(folder).startsWith('opencode-cu-package-'));
     rmSync(folder, { recursive: true, force: true });
   }
 });
@@ -29,7 +29,7 @@ test('GitHub export contains a complete portable English repository and passes t
   assert.equal(verifyOpenCodePackage(result.directory).valid, true);
   assert.deepEqual(checkContract(result.directory), []);
   const manifest = JSON.parse(readFileSync(join(result.directory, 'package.json'), 'utf8'));
-  assert.equal(manifest.name, 'dsh-cu');
+  assert.equal(manifest.name, 'opencode-computer-use');
   assert.equal(manifest.private, true);
   assert.equal(manifest.repository.url, 'git+https://github.com/datuloar/open-code-computer-use-win.git');
   assert.equal(manifest.dependencies, undefined);
@@ -102,6 +102,14 @@ test('a source directory junction cannot pull files into an export', () => {
 test('a fresh exported copy installs, repeats and uninstalls from a path with spaces', async () => {
   const parent = fixture();
   const result = buildOpenCodePackage({ outputDir: join(parent, 'release with spaces') });
+  const manifest = JSON.parse(readFileSync(join(result.directory, 'package.json'), 'utf8'));
+  const { default: nativePlugin } = await import(pathToFileURL(join(result.directory, manifest.main)).href);
+  const hooks = await nativePlugin({}, { node: process.execPath });
+  const nativeConfig = {};
+  await hooks.config(nativeConfig);
+  assert.equal(nativeConfig.mcp.computer.command[1], join(result.directory, 'opencode/mcp.js'));
+  assert.ok(nativeConfig.instructions.includes(join(result.directory, 'opencode/INSTRUCTIONS.md')));
+  await hooks.dispose();
   const { installOpenCode, parseConfig } = await import(pathToFileURL(join(result.directory, 'src/install-opencode.js')).href);
   const configDir = join(parent, 'fresh config');
   const configPath = join(configDir, 'opencode.jsonc');

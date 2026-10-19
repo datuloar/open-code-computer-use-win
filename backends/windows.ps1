@@ -72,9 +72,9 @@ function Set-Invocation {
     }
 }
 
-if ($env:DSH_CU_ARGV) {
-    Set-Invocation @((ConvertFrom-Json $env:DSH_CU_ARGV))
-    Remove-Item Env:\DSH_CU_ARGV -ErrorAction SilentlyContinue
+if ($env:OPENCODE_CU_ARGV) {
+    Set-Invocation @((ConvertFrom-Json $env:OPENCODE_CU_ARGV))
+    Remove-Item Env:\OPENCODE_CU_ARGV -ErrorAction SilentlyContinue
 } else {
     foreach ($argument in @($A1, $A2, $A3, $A4, $A5, $A6)) {
         if ($null -ne $argument -and $argument -ne '') { [void]$operands.Add($argument) }
@@ -105,19 +105,19 @@ $sources = @(
 )
 $source = ($sources | ForEach-Object { Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "csharp\$_.cs") }) -join "`n"
 Add-Type -TypeDefinition $source -ReferencedAssemblies System.Drawing, System.Windows.Forms, UIAutomationClient, UIAutomationTypes, WindowsBase
-[DshCu.Native]::EnableDpiAwareness()
+[OpenCodeCu.Native]::EnableDpiAwareness()
 
 $FreshSeconds = 5
 
-$stopFile = [DshCu.StateFiles]::Stop
-$aliveFile = [DshCu.StateFiles]::Heartbeat
-$pidFile = [DshCu.StateFiles]::Pid
-$cursorFile = [DshCu.StateFiles]::CursorHidden
-$actionFile = [DshCu.StateFiles]::Action
-$brokerReady = [DshCu.StateFiles]::BrokerReady
-$brokerStop = [DshCu.StateFiles]::BrokerStop
-$brokerRequests = [DshCu.StateFiles]::InTemp('dsh-cu.broker.req.*')
-$brokerAnswers = [DshCu.StateFiles]::InTemp('dsh-cu.broker.res.*')
+$stopFile = [OpenCodeCu.StateFiles]::Stop
+$aliveFile = [OpenCodeCu.StateFiles]::Heartbeat
+$pidFile = [OpenCodeCu.StateFiles]::Pid
+$cursorFile = [OpenCodeCu.StateFiles]::CursorHidden
+$actionFile = [OpenCodeCu.StateFiles]::Action
+$brokerReady = [OpenCodeCu.StateFiles]::BrokerReady
+$brokerStop = [OpenCodeCu.StateFiles]::BrokerStop
+$brokerRequests = [OpenCodeCu.StateFiles]::InTemp('opencode-cu.broker.req.*')
+$brokerAnswers = [OpenCodeCu.StateFiles]::InTemp('opencode-cu.broker.res.*')
 
 trap {
     Write-Output ("ERROR " + $_.Exception.Message)
@@ -125,11 +125,11 @@ trap {
 }
 
 function Get-StateAge([string]$path) {
-    return [DshCu.StateFiles]::AgeSeconds($path)
+    return [OpenCodeCu.StateFiles]::AgeSeconds($path)
 }
 
 function Get-StateText([string]$path) {
-    return [DshCu.StateFiles]::Read($path)
+    return [OpenCodeCu.StateFiles]::Read($path)
 }
 
 function Test-Integer([string]$value, [string]$name) {
@@ -142,7 +142,7 @@ function Get-VisibleWindow {
     param([string]$TitleLike)
     $windows = Get-Process | Where-Object {
         $_.MainWindowHandle -ne 0 -and
-        [DshCu.Native]::IsWindowVisible($_.MainWindowHandle) -and
+        [OpenCodeCu.Native]::IsWindowVisible($_.MainWindowHandle) -and
         $_.MainWindowTitle -ne ''
     }
     if ($TitleLike) {
@@ -156,9 +156,9 @@ function Set-Foreground($process) {
     $handle = $process.MainWindowHandle
     if ($handle -eq [IntPtr]::Zero) { throw "process $($process.Id) has no window" }
     for ($attempt = 1; $attempt -le 6; $attempt++) {
-        [DshCu.StateFiles]::RequireInput()
+        [OpenCodeCu.StateFiles]::RequireInput()
         if ($attempt -eq 1) { (New-Object -ComObject WScript.Shell).AppActivate($process.Id) | Out-Null }
-        if ([DshCu.Native]::FocusVerified($handle)) {
+        if ([OpenCodeCu.Native]::FocusVerified($handle)) {
             Write-Output ("FOCUSED " + $process.MainWindowTitle)
             return
         }
@@ -180,8 +180,8 @@ function Test-IndicatorProcess($process, [long]$startedTicks) {
 }
 
 function Assert-ClientOwnership {
-    if (-not $env:DSH_CU_OWNER) { return }
-    if ((Get-StateText ([DshCu.StateFiles]::Owner)) -eq $env:DSH_CU_OWNER) { return }
+    if (-not $env:OPENCODE_CU_OWNER) { return }
+    if ((Get-StateText ([OpenCodeCu.StateFiles]::Owner)) -eq $env:OPENCODE_CU_OWNER) { return }
     $fields = (Get-StateText $pidFile) -split '\s+'
     $recordedPid = 0
     $recordedStart = 0L
@@ -208,14 +208,14 @@ function Clear-Indicator {
         $current = Get-Process -Id $owner -ErrorAction SilentlyContinue
         if (Test-IndicatorProcess $current $ownerStarted) { Stop-Process -InputObject $current -Force -ErrorAction SilentlyContinue }
     }
-    if (Test-Path $cursorFile) { [DshCu.SystemCursors]::Restore() }
-    Remove-Item $aliveFile, $stopFile, $pidFile, $actionFile, ([DshCu.StateFiles]::Ready), ([DshCu.StateFiles]::Owner) -Force -ErrorAction SilentlyContinue
+    if (Test-Path $cursorFile) { [OpenCodeCu.SystemCursors]::Restore() }
+    Remove-Item $aliveFile, $stopFile, $pidFile, $actionFile, ([OpenCodeCu.StateFiles]::Ready), ([OpenCodeCu.StateFiles]::Owner) -Force -ErrorAction SilentlyContinue
 }
 
 function Resolve-UiWindow {
-    if ($TargetPid) { return [DshCu.UiTree]::Usable([DshCu.UiTree]::ForPid((Test-Integer $TargetPid 'pid'))) }
-    if ($TargetTitle) { return [DshCu.UiTree]::Usable([DshCu.UiTree]::ForTitle($TargetTitle)) }
-    return [DshCu.UiTree]::Usable([DshCu.UiTree]::Foreground())
+    if ($TargetPid) { return [OpenCodeCu.UiTree]::Usable([OpenCodeCu.UiTree]::ForPid((Test-Integer $TargetPid 'pid'))) }
+    if ($TargetTitle) { return [OpenCodeCu.UiTree]::Usable([OpenCodeCu.UiTree]::ForTitle($TargetTitle)) }
+    return [OpenCodeCu.UiTree]::Usable([OpenCodeCu.UiTree]::Foreground())
 }
 
 function Get-CaptureArea {
@@ -282,7 +282,7 @@ function Invoke-WinRt {
 function Read-ScreenText {
     param([System.Drawing.Rectangle]$Area)
     $zoom = if ($Area.Width -lt 900 -or $Area.Height -lt 500) { 2 } else { 1 }
-    $file = [DshCu.StateFiles]::InTemp("dsh-cu.ocr.$PID.png")
+    $file = [OpenCodeCu.StateFiles]::InTemp("opencode-cu.ocr.$PID.png")
     $bitmap = New-ScreenBitmap $Area $zoom
     try { $bitmap.Save($file, [System.Drawing.Imaging.ImageFormat]::Png) } finally { $bitmap.Dispose() }
     try {
@@ -390,7 +390,7 @@ function Invoke-Dispatch {
         throw "$Command runs in its own process and cannot be sent to a serving backend"
     }
     $label = Get-ActionLabel
-    if ($label) { [DshCu.StateFiles]::Write($actionFile, $label) }
+    if ($label) { [OpenCodeCu.StateFiles]::Write($actionFile, $label) }
 
     switch ($Command) {
         'shot' {
@@ -414,34 +414,34 @@ function Invoke-Dispatch {
             }
         }
         'tree' {
-            Write-Output ([DshCu.UiTree]::Dump((Resolve-UiWindow), $Depth, [bool]$All, [bool]$Json))
+            Write-Output ([OpenCodeCu.UiTree]::Dump((Resolve-UiWindow), $Depth, [bool]$All, [bool]$Json))
         }
         'find' {
             $needle = Arg 0
             if ([string]::IsNullOrWhiteSpace($needle)) { throw 'find needs the text to look for' }
-            Write-Output ([DshCu.UiTree]::Search((Resolve-UiWindow), $needle, [bool]$Json))
+            Write-Output ([OpenCodeCu.UiTree]::Search((Resolve-UiWindow), $needle, [bool]$Json))
         }
         'tap' {
             $needle = Arg 0
             if ([string]::IsNullOrWhiteSpace($needle)) { throw 'tap needs the name of the control to click' }
             $window = Resolve-UiWindow
-            $node = [DshCu.UiTree]::Only($window, $needle)
-            [DshCu.UiTree]::EnsureVisibleAt($window, $node.CenterX, $node.CenterY)
-            [DshCu.InputInjector]::Click($node.CenterX, $node.CenterY, 'left')
+            $node = [OpenCodeCu.UiTree]::Only($window, $needle)
+            [OpenCodeCu.UiTree]::EnsureVisibleAt($window, $node.CenterX, $node.CenterY)
+            [OpenCodeCu.InputInjector]::Click($node.CenterX, $node.CenterY, 'left')
             Write-Output ("TAPPED " + $node.Role + " '" + $node.Label() + "' at " + $node.CenterX + "," + $node.CenterY)
         }
         'inspect' {
             $needle = Arg 0
             if ([string]::IsNullOrWhiteSpace($needle)) { throw 'inspect needs the name of the control' }
-            Write-Output ([DshCu.ControlState]::Inspect((Resolve-UiWindow), $needle, $MaxChars))
+            Write-Output ([OpenCodeCu.ControlState]::Inspect((Resolve-UiWindow), $needle, $MaxChars))
         }
-        'move' { [DshCu.InputInjector]::Move((Test-Integer (Arg 0) 'x'), (Test-Integer (Arg 1) 'y')) }
+        'move' { [OpenCodeCu.InputInjector]::Move((Test-Integer (Arg 0) 'x'), (Test-Integer (Arg 1) 'y')) }
         'click' {
             $mode = if (Arg 2) { Arg 2 } else { 'left' }
-            [DshCu.InputInjector]::Click((Test-Integer (Arg 0) 'x'), (Test-Integer (Arg 1) 'y'), $mode)
+            [OpenCodeCu.InputInjector]::Click((Test-Integer (Arg 0) 'x'), (Test-Integer (Arg 1) 'y'), $mode)
         }
         'drag' {
-            [DshCu.InputInjector]::Drag(
+            [OpenCodeCu.InputInjector]::Drag(
                 (Test-Integer (Arg 0) 'x'),
                 (Test-Integer (Arg 1) 'y'),
                 (Test-Integer (Arg 2) 'to x'),
@@ -452,18 +452,18 @@ function Invoke-Dispatch {
             $at = (Arg 1) -and (Arg 2)
             if ($Horizontal) {
                 if ($at) {
-                    [DshCu.InputInjector]::WheelHorizontalAt((Test-Integer (Arg 1) 'x'), (Test-Integer (Arg 2) 'y'), $delta)
+                    [OpenCodeCu.InputInjector]::WheelHorizontalAt((Test-Integer (Arg 1) 'x'), (Test-Integer (Arg 2) 'y'), $delta)
                 } else {
-                    [DshCu.InputInjector]::WheelHorizontal($delta)
+                    [OpenCodeCu.InputInjector]::WheelHorizontal($delta)
                 }
             } elseif ($at) {
-                [DshCu.InputInjector]::WheelAt((Test-Integer (Arg 1) 'x'), (Test-Integer (Arg 2) 'y'), $delta)
+                [OpenCodeCu.InputInjector]::WheelAt((Test-Integer (Arg 1) 'x'), (Test-Integer (Arg 2) 'y'), $delta)
             } else {
-                [DshCu.InputInjector]::Wheel($delta)
+                [OpenCodeCu.InputInjector]::Wheel($delta)
             }
         }
-        'type' { [DshCu.InputInjector]::Type((Arg 0)) }
-        'key' { [DshCu.InputInjector]::Key((Arg 0), (Arg 1)) }
+        'type' { [OpenCodeCu.InputInjector]::Type((Arg 0)) }
+        'key' { [OpenCodeCu.InputInjector]::Key((Arg 0), (Arg 1)) }
         'keys' {
             $combo = Arg 0
             $parts = $combo -split '\+'
@@ -473,19 +473,19 @@ function Invoke-Dispatch {
             for ($index = 0; $index -lt $parts.Count - 1; $index++) {
                 $name = $parts[$index].Trim()
                 if ($modifiers -notcontains $name.ToLowerInvariant()) { throw "unknown modifier: $name" }
-                [DshCu.InputInjector]::Press($name)
+                [OpenCodeCu.InputInjector]::Press($name)
                 $held += $name
             }
             $tapKey = $parts[-1].Trim()
-            [DshCu.InputInjector]::Press($tapKey)
-            [DshCu.InputInjector]::Release($tapKey)
+            [OpenCodeCu.InputInjector]::Press($tapKey)
+            [OpenCodeCu.InputInjector]::Release($tapKey)
             } finally {
-                for ($index = $held.Count - 1; $index -ge 0; $index--) { [DshCu.InputInjector]::Release($held[$index]) }
+                for ($index = $held.Count - 1; $index -ge 0; $index--) { [OpenCodeCu.InputInjector]::Release($held[$index]) }
             }
             Write-Output ('KEYS ' + $combo)
         }
         'clipboard' {
-            [DshCu.StateFiles]::RequireInput()
+            [OpenCodeCu.StateFiles]::RequireInput()
             $action = Arg 0
             if ($action -eq 'set') {
                 Set-Clipboard -Value (Arg 1)
@@ -499,10 +499,10 @@ function Invoke-Dispatch {
             }
         }
         'pos' {
-            $point = New-Object DshCu.POINT
-            [void][DshCu.Native]::GetCursorPos([ref]$point)
+            $point = New-Object OpenCodeCu.POINT
+            [void][OpenCodeCu.Native]::GetCursorPos([ref]$point)
             Write-Output ("CURSOR " + $point.X + "," + $point.Y)
-            Write-Output ("FOREGROUND " + [DshCu.Native]::ForegroundWindowTitle())
+            Write-Output ("FOREGROUND " + [OpenCodeCu.Native]::ForegroundWindowTitle())
         }
         'windows' {
             Get-VisibleWindow | Select-Object Id, ProcessName, MainWindowTitle |
@@ -510,11 +510,11 @@ function Invoke-Dispatch {
         }
         'windows-json' {
             $entries = @(Get-VisibleWindow | ForEach-Object {
-            if ([DshCu.Native]::IsIconic($_.MainWindowHandle)) {
+            if ([OpenCodeCu.Native]::IsIconic($_.MainWindowHandle)) {
                 [pscustomobject]@{ pid = $_.Id; title = $_.MainWindowTitle; minimized = $true }
             } else {
-                $rect = New-Object DshCu.RECT
-                [void][DshCu.Native]::GetWindowRect($_.MainWindowHandle, [ref]$rect)
+                $rect = New-Object OpenCodeCu.RECT
+                [void][OpenCodeCu.Native]::GetWindowRect($_.MainWindowHandle, [ref]$rect)
                 [pscustomobject]@{
                     pid = $_.Id
                     title = $_.MainWindowTitle
@@ -530,7 +530,7 @@ function Invoke-Dispatch {
         }
         'display' {
             $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-            Write-Output ("DISPLAY " + $bounds.Width + "x" + $bounds.Height + " dpi=" + [DshCu.Native]::SystemDpi())
+            Write-Output ("DISPLAY " + $bounds.Width + "x" + $bounds.Height + " dpi=" + [OpenCodeCu.Native]::SystemDpi())
         }
         'focus' {
             $target = Test-Integer (Arg 0) 'pid'
@@ -548,7 +548,7 @@ function Invoke-Dispatch {
             $seconds = if (Arg 1) { Test-Integer (Arg 1) 'seconds' } else { 15 }
             $deadline = (Get-Date).AddSeconds($seconds)
             while ((Get-Date) -lt $deadline) {
-                [DshCu.StateFiles]::RequireInput()
+                [OpenCodeCu.StateFiles]::RequireInput()
                 $matches = @(Get-VisibleWindow $title)
                 if ($matches.Count -gt 1) { throw 'multiple windows match the title; use a pid or a more specific title' }
                 $match = $matches | Select-Object -First 1
@@ -561,7 +561,7 @@ function Invoke-Dispatch {
             throw "no window title contains $title within $seconds seconds"
         }
         'broker-start' {
-            [DshCu.StateFiles]::RequireInput()
+            [OpenCodeCu.StateFiles]::RequireInput()
             $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"' + $PSCommandPath + '"'), 'broker-loop')
             Start-Process powershell -Verb RunAs -ArgumentList $arguments -WindowStyle Hidden | Out-Null
             Write-Output 'BROKER_STARTED'
@@ -572,23 +572,23 @@ function Invoke-Dispatch {
             while (-not (Test-Path $brokerStop)) {
                 Set-Content -Path $brokerReady -Value ([DateTime]::Now.ToString('O'))
                 $request = Get-ChildItem $brokerRequests -ErrorAction SilentlyContinue |
-                    Where-Object { $_.Name -match '^dsh-cu\.broker\.req\.\d+$' } |
+                    Where-Object { $_.Name -match '^opencode-cu\.broker\.req\.\d+$' } |
                     Sort-Object LastWriteTime | Select-Object -First 1
                 if (-not $request) {
                     Start-Sleep -Milliseconds 150
                     continue
                 }
                 $payload = Get-StateText $request.FullName
-                $responsePath = [DshCu.StateFiles]::InTemp(($request.Name -replace '\.req\.', '.res.'))
+                $responsePath = [OpenCodeCu.StateFiles]::InTemp(($request.Name -replace '\.req\.', '.res.'))
                 Remove-Item $request.FullName -Force -ErrorAction SilentlyContinue
                 $result = ''
                 try {
-                    $env:DSH_CU_ARGV = $payload
+                    $env:OPENCODE_CU_ARGV = $payload
                     $result = (& powershell -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath 2>&1 | Out-String)
                 } catch {
                     $result = 'ERROR ' + $_.Exception.Message
                 } finally {
-                    Remove-Item Env:\DSH_CU_ARGV -ErrorAction SilentlyContinue
+                    Remove-Item Env:\OPENCODE_CU_ARGV -ErrorAction SilentlyContinue
                 }
                 $stagedResponse = $responsePath + '.tmp'
                 [IO.File]::WriteAllText($stagedResponse, $result, (New-Object System.Text.UTF8Encoding($false)))
@@ -599,7 +599,7 @@ function Invoke-Dispatch {
             Write-Output 'BROKER_STOPPED'
         }
         'broker-stop' {
-            [DshCu.StateFiles]::RequireInput()
+            [OpenCodeCu.StateFiles]::RequireInput()
             Set-Content -Path $brokerStop -Value 'stop'
             for ($attempt = 0; $attempt -lt 40; $attempt++) {
                 Start-Sleep -Milliseconds 150
@@ -613,7 +613,7 @@ function Invoke-Dispatch {
             else { Write-Output 'BROKER_STOPPED' }
         }
         'run' {
-            [DshCu.StateFiles]::RequireInput()
+            [OpenCodeCu.StateFiles]::RequireInput()
             $previous = $ErrorActionPreference
             $ErrorActionPreference = 'Continue'
             try {
@@ -629,14 +629,14 @@ function Invoke-Dispatch {
         }
         'overlay-start' {
             if ($Announce -lt 0 -or $Announce -gt 30) { throw 'announce seconds must be between 0 and 30' }
-            $startupLock = New-Object System.Threading.Mutex($false, 'Local\DshCuIndicatorStart')
+            $startupLock = New-Object System.Threading.Mutex($false, 'Local\OpenCodeCuIndicatorStart')
             $locked = $false
             try {
                 try { $locked = $startupLock.WaitOne(20000) }
                 catch [System.Threading.AbandonedMutexException] { $locked = $true }
                 if (-not $locked) { throw 'another indicator startup is still in progress' }
                 Assert-ClientOwnership
-                [DshCu.StateFiles]::Write($stopFile, 'stop')
+                [OpenCodeCu.StateFiles]::Write($stopFile, 'stop')
                 Clear-Indicator
                 $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"' + $PSCommandPath + '"'), 'overlay', '-Announce', "$Announce")
                 if ($Quiet) { $arguments += '-Quiet' }
@@ -662,13 +662,13 @@ function Invoke-Dispatch {
         }
         'cursor-state' {
             if (Test-Path $cursorFile) { Write-Output 'CURSOR_REPLACED' }
-            elseif ([DshCu.Native]::CursorIsShowing()) { Write-Output 'CURSOR_VISIBLE' }
+            elseif ([OpenCodeCu.Native]::CursorIsShowing()) { Write-Output 'CURSOR_VISIBLE' }
             else { Write-Output 'CURSOR_HIDDEN_BY_OTHER' }
         }
         'overlay' {
             $mode = Arg 0
             if ($mode -eq 'stop' -or $mode -eq 'restore-cursor') {
-                $stopLock = New-Object System.Threading.Mutex($false, 'Local\DshCuIndicatorStart')
+                $stopLock = New-Object System.Threading.Mutex($false, 'Local\OpenCodeCuIndicatorStart')
                 $locked = $false
                 try {
                     try { $locked = $stopLock.WaitOne(20000) }
@@ -677,7 +677,7 @@ function Invoke-Dispatch {
                     Assert-ClientOwnership
                     if ($mode -eq 'stop') { Set-Content -Path $stopFile -Value ([DateTime]::Now.ToString('O')) }
                     Clear-Indicator
-                    if ($mode -eq 'restore-cursor') { [DshCu.SystemCursors]::Restore() }
+                    if ($mode -eq 'restore-cursor') { [OpenCodeCu.SystemCursors]::Restore() }
                     if ($mode -eq 'stop') { Write-Output 'STOPPED' } else { Write-Output 'CURSOR_RESTORED' }
                     return
                 } finally {
@@ -689,9 +689,9 @@ function Invoke-Dispatch {
             Assert-ClientOwnership
             if (Test-Path $stopFile) { Remove-Item $stopFile -Force }
             Clear-Indicator
-            $context = New-Object DshCu.Indicator($Quiet, $Announce, [bool]$HideCursor)
+            $context = New-Object OpenCodeCu.Indicator($Quiet, $Announce, [bool]$HideCursor)
             [System.Windows.Forms.Application]::Run($context)
-            if (Test-Path $cursorFile) { [DshCu.SystemCursors]::Restore() }
+            if (Test-Path $cursorFile) { [OpenCodeCu.SystemCursors]::Restore() }
             Write-Output 'OVERLAY_CLOSED'
         }
         default { throw "unknown command: $Command" }
@@ -701,7 +701,7 @@ function Invoke-Dispatch {
 function Invoke-Serve {
     $script:Serving = $true
     [Console]::InputEncoding = [System.Text.Encoding]::UTF8
-    $end = [string][char]0x1E + 'DSH-CU-END'
+    $end = [string][char]0x1E + 'OPENCODE-CU-END'
     [Console]::Out.WriteLine($end + ' READY')
     [Console]::Out.Flush()
     while ($true) {

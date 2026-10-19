@@ -28,7 +28,7 @@ The earlier ByteDance UI-TARS review remains separate. UI-TARS Desktop has its o
 browser operator and session-history features. Our changes do not supply a browser DOM operator,
 cross-platform execution or a measured task win rate against it.
 
-## What changed in version 1.4.0
+## What changed in version 1.0.0
 
 ### Read exact accessible values
 
@@ -38,7 +38,7 @@ Use the existing MCP tool:
 {"pid":1234,"text":"Test editor","details":true,"max_chars":2000}
 ```
 
-with computer_find. The manual equivalent is `dsh-cu inspect "Test editor" --pid 1234`.
+with computer_find. The manual equivalent is `opencode-cu inspect "Test editor" --pid 1234`.
 It returns JSON with the selected control, enabled/focused state, value, source, read-only status
 and optional toggle/selection state. ValuePattern is preferred; TextPattern is the bounded fallback.
 Compare a complete value only when valueStatus is available and truncated is false. Whitespace is
@@ -59,7 +59,7 @@ Use computer_wait with a positive deadline of at most 30 seconds:
 ```
 
 State exists also accepts a disabled control. Plain seconds retains the original delay behavior.
-The manual command is `dsh-cu wait-control "Save" --pid 1234 --seconds 5`.
+The manual command is `opencode-cu wait-control "Save" --pid 1234 --seconds 5`.
 The wait performs bounded observations inside one call, supports cancellation, returns the final
 observation and poll count, and refuses timeout or ambiguity. It does not focus, click, move the
 pointer or start an indicator. An enabled result does not prove that a target is uncovered; tap

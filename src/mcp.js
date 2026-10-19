@@ -26,7 +26,7 @@ const PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 const HUMAN_STOP_HOLD_SECONDS = 600;
 const MAX_WAIT_SECONDS = 30;
-const OWNER = process.env.DSH_CU_OWNER || `mcp:${randomUUID()}`;
+const OWNER = process.env.OPENCODE_CU_OWNER || `mcp:${randomUUID()}`;
 const requests = new Map();
 let activeRequest = null;
 let runningHost = null;
@@ -412,7 +412,7 @@ export async function handle(message) {
       return success(id, {
         protocolVersion: PROTOCOLS.includes(requested) ? requested : PROTOCOLS[0],
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: process.env.DSH_CU_THEME === 'opencode' ? 'opencode-computer-use' : 'dsh-cu', version: VERSION },
+        serverInfo: { name: 'opencode-computer-use', version: VERSION },
         instructions: INSTRUCTIONS,
       });
     }
@@ -465,7 +465,7 @@ function failure(id, code, message) {
 }
 
 export function serve() {
-  process.env.DSH_CU_OWNER = OWNER;
+  process.env.OPENCODE_CU_OWNER = OWNER;
   captureConsole();
   const host = new BackendHost(serveCommand());
   runningHost = host;

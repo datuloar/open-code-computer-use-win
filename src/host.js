@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { ToolError } from './tool-error.js';
 
-const END = 'DSH-CU-END';
+const END = 'OPENCODE-CU-END';
 const START_TIMEOUT_MS = 30_000;
 const CALL_TIMEOUT_MS = 60_000;
 const MAX_OUTPUT_CHARS = 16 * 1024 * 1024;

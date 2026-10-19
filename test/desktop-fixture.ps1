@@ -1,9 +1,9 @@
 param([string]$Folder)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-Add-Type -Namespace DshCuTest -Name ClipboardSequence -MemberDefinition '[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern uint GetClipboardSequenceNumber();'
+Add-Type -Namespace OpenCodeCuTest -Name ClipboardSequence -MemberDefinition '[System.Runtime.InteropServices.DllImport("user32.dll")] public static extern uint GetClipboardSequenceNumber();'
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'DSH Computer Use Test ' + (Split-Path $Folder -Leaf)
+$form.Text = 'OpenCode Computer Use Test ' + (Split-Path $Folder -Leaf)
 $form.Size = New-Object System.Drawing.Size(980, 620)
 $form.StartPosition = 'CenterScreen'
 $form.BackColor = [System.Drawing.Color]::FromArgb(22, 25, 34)
@@ -68,7 +68,7 @@ $variant.Add_Click({ [IO.File]::WriteAllText((Join-Path $Folder 'wrong-delayed-c
 $form.Controls.Add($variant)
 $script:enableControlAt = $null
 $cover = New-Object System.Windows.Forms.Form
-$cover.Text = 'DSH Test covering window'
+$cover.Text = 'OpenCode Test covering window'
 $cover.FormBorderStyle = 'None'
 $cover.StartPosition = 'Manual'
 $cover.ShowInTaskbar = $false
@@ -106,7 +106,7 @@ $timer.Add_Tick({
         $response = @{ id = $request.id }
         try {
             switch ($request.action) {
-                'clipboard' { $response.sequence = [DshCuTest.ClipboardSequence]::GetClipboardSequenceNumber() }
+                'clipboard' { $response.sequence = [OpenCodeCuTest.ClipboardSequence]::GetClipboardSequenceNumber() }
                 'cover' {
                     $cover.Bounds = $form.RectangleToScreen($button.Bounds)
                     $cover.Show($form)

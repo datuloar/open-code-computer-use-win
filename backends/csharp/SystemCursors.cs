@@ -1,4 +1,4 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public static class SystemCursors

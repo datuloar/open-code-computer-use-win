@@ -1,4 +1,4 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public static class UiTree
@@ -54,7 +54,7 @@ public static class UiTree
         {
             throw new InvalidOperationException(
                 "\"" + Describe(window) + "\" is minimised, so its controls have no place on screen - " +
-                "bring it up with dsh-cu focus first");
+                "bring it up with opencode-cu focus first");
         }
         return window;
     }
@@ -76,7 +76,7 @@ public static class UiTree
         for (int index = 0; index < nodes.Count; index++) text.AppendLine(nodes[index].Line());
         if (truncated)
         {
-            text.AppendLine("... cut at " + TreeCap + " elements: narrow it with dsh-cu find <text> or a smaller --depth");
+            text.AppendLine("... cut at " + TreeCap + " elements: narrow it with opencode-cu find <text> or a smaller --depth");
         }
         return text.ToString().TrimEnd();
     }

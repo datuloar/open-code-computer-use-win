@@ -1,4 +1,4 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public class Indicator : ApplicationContext
@@ -6,7 +6,6 @@ public class Indicator : ApplicationContext
     private const int HeartbeatEveryTicks = 12;
     private const double IdleMinutes = 1;
     private const int AnnounceAlpha = 255;
-    private const double PulseSeconds = 2.6;
     private const double GlowBase = 196;
     private const double GlowAmplitude = 56;
     private const int GlowStep = 5;
@@ -36,7 +35,7 @@ public class Indicator : ApplicationContext
 
     public Indicator(bool quiet, int announceSeconds, bool hideCursor)
     {
-        _ownership = new System.Threading.Mutex(false, "Local\\DshCuIndicator");
+        _ownership = new System.Threading.Mutex(false, "Local\\OpenCodeCuIndicator");
         bool acquired;
         try { acquired = _ownership.WaitOne(0); }
         catch (System.Threading.AbandonedMutexException) { acquired = true; }
@@ -54,7 +53,7 @@ public class Indicator : ApplicationContext
         StateFiles.Delete(StateFiles.Ready);
         StateFiles.Write(StateFiles.Touch, DateTime.UtcNow.ToString("O"));
         StateFiles.Write(StateFiles.Pid, Process.GetCurrentProcess().Id + " " + StartTicks());
-        StateFiles.Write(StateFiles.Owner, Environment.GetEnvironmentVariable("DSH_CU_OWNER") ?? "");
+        StateFiles.Write(StateFiles.Owner, Environment.GetEnvironmentVariable("OPENCODE_CU_OWNER") ?? "");
         StateFiles.Delete(StateFiles.Action);
         if (hideCursor) SystemCursors.Hide();
 
@@ -235,8 +234,7 @@ public class Indicator : ApplicationContext
 
     private static double Breath(double elapsed)
     {
-        if (Theme.OpenCode) return 0.5;
-        return 0.5 + 0.5 * Math.Sin(elapsed * (2 * Math.PI / PulseSeconds));
+        return 0.5;
     }
 
     private static int PulseAlpha(double elapsed)

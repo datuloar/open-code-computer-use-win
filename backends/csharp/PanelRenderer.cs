@@ -1,4 +1,4 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public sealed class PanelRenderer : IDisposable
@@ -230,7 +230,7 @@ public sealed class PanelRenderer : IDisposable
     private void DrawStatusDot(Graphics graphics, PointF center, PanelState state)
     {
         Color accent = state.Announcing ? Theme.Warn : Theme.Accent;
-        if (Theme.OpenCode && !state.Announcing)
+        if (!state.Announcing)
         {
             float side = Theme.Pxf(7);
             using (SolidBrush square = new SolidBrush(accent))

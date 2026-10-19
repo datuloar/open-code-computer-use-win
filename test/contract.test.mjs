@@ -1,82 +1,84 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { checkContract } from '../src/contract.js';
-import { SKILL_DESCRIPTION, SKILL_NAME } from '../lib/skill.js';
+import { readField, readFrontmatter } from '../src/frontmatter.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const fixtures = [];
-
 function packageFixture() {
-  const folder = mkdtempSync(join(tmpdir(), 'dsh-cu-contract-'));
+  const folder = mkdtempSync(join(tmpdir(), 'opencode-cu-contract-'));
   fixtures.push(folder);
-  for (const file of ['SKILL.md', 'README.md', 'package.json', 'cordis.patch.yml', 'install-opencode.ps1']) {
+  for (const file of ['README.md', 'package.json', 'install-opencode.ps1', 'opencode/plugin.js', 'opencode/mcp.js',
+    'opencode/SKILL.md', 'opencode/INSTRUCTIONS.md', 'src/cli.js', 'src/opencode.js', 'src/install-opencode.js',
+    'backends/windows.ps1', 'bin/opencode-cu.cmd']) {
+    mkdirSync(dirname(join(folder, file)), { recursive: true });
     copyFileSync(join(root, file), join(folder, file));
   }
-  mkdirSync(join(folder, 'lib'), { recursive: true });
-  mkdirSync(join(folder, 'src'), { recursive: true });
-  writeFileSync(join(folder, 'lib', 'index.js'), '');
-  writeFileSync(join(folder, 'src', 'cli.js'), '');
-  writeFileSync(join(folder, 'src', 'opencode.js'), '');
-  writeFileSync(join(folder, 'src', 'install-opencode.js'), '');
-  mkdirSync(join(folder, 'opencode'));
-  for (const file of ['plugin.js', 'mcp.js', 'SKILL.md', 'INSTRUCTIONS.md'])
-    copyFileSync(join(root, 'opencode', file), join(folder, 'opencode', file));
   return folder;
 }
 
-after(() => {
-  for (const folder of fixtures) rmSync(folder, { recursive: true, force: true });
-});
+after(() => { for (const folder of fixtures) rmSync(folder, { recursive: true, force: true }); });
 
-test('this repository satisfies its own contract', () => {
+test('this repository satisfies its native OpenCode contract', () => {
   assert.deepEqual(checkContract(root), []);
 });
 
-test('the skill is registered under the package name', () => {
-  assert.equal(SKILL_NAME, 'dsh-computer-use');
-  assert.ok(SKILL_DESCRIPTION.length > 80, 'a one-line description must be long enough to route on');
+test('the discoverable OpenCode skill has a routing description', () => {
+  const frontmatter = readFrontmatter(readFileSync(join(root, 'opencode/SKILL.md'), 'utf8'));
+  assert.equal(readField(frontmatter, 'name').value, 'opencode-computer-use');
+  assert.ok(readField(frontmatter, 'description').value.length > 80);
 });
 
-test('the package fixture passes, so the negative cases below mean something', () => {
+test('the package fixture passes before testing invalid changes', () => {
   assert.deepEqual(checkContract(packageFixture()), []);
 });
 
-test('a skill that no longer declares a description is reported', () => {
+test('a missing skill description is reported', () => {
   const folder = packageFixture();
-  writeFileSync(join(folder, 'SKILL.md'), readFileSync(join(root, 'SKILL.md'), 'utf8').replace(/description:[\s\S]*?\n---/, '---'));
-  assert.match(checkContract(folder).join('\n'), /SKILL\.md must start with YAML frontmatter|has no `description`/);
+  const skill = join(folder, 'opencode/SKILL.md');
+  writeFileSync(skill, readFileSync(skill, 'utf8').replace(/description:[\s\S]*?\n---/, '---'));
+  assert.match(checkContract(folder).join('\n'), /no description/);
 });
 
-test('a plain description containing ": " is rejected with the reason', () => {
+test('an unquoted colon in skill metadata is rejected', () => {
   const folder = packageFixture();
-  const broken = readFileSync(join(root, 'SKILL.md'), 'utf8').replace(/description:[\s\S]*?\n---/, 'description: a colon: breaks YAML\n---');
-  writeFileSync(join(folder, 'SKILL.md'), broken);
-  assert.match(checkContract(folder).join('\n'), /plain YAML scalar containing ": "/);
+  const skill = join(folder, 'opencode/SKILL.md');
+  writeFileSync(skill, readFileSync(skill, 'utf8').replace(/description:[\s\S]*?\n---/, 'description: a colon: breaks YAML\n---'));
+  assert.match(checkContract(folder).join('\n'), /plain YAML scalar/);
 });
 
 test('an undocumented command is reported', () => {
   const folder = packageFixture();
-  const readme = readFileSync(join(folder, 'README.md'), 'utf8').replace(/dsh-cu shot/g, 'dsh-cu snap');
-  writeFileSync(join(folder, 'README.md'), readme);
+  const readme = join(folder, 'README.md');
+  writeFileSync(readme, readFileSync(readme, 'utf8').replace(/opencode-cu shot/g, 'opencode-cu snap'));
   const problems = checkContract(folder).join('\n');
-  assert.match(problems, /documents "dsh-cu snap", which does not exist/);
-  assert.match(problems, /never mentions "dsh-cu shot"/);
+  assert.match(problems, /documents "opencode-cu snap", which does not exist/);
+  assert.match(problems, /never mentions "opencode-cu shot"/);
 });
 
-test('a bundle without a patch file is reported', () => {
+test('incorrect package entry, CLI or host requirements fail the contract', () => {
   const folder = packageFixture();
-  rmSync(join(folder, 'cordis.patch.yml'));
-  assert.match(checkContract(folder).join('\n'), /dsh\.bundle\.patch points at .* which does not exist/);
+  const path = join(folder, 'package.json');
+  const manifest = JSON.parse(readFileSync(path, 'utf8'));
+  manifest.main = 'wrong.js';
+  manifest.bin = {};
+  manifest.engines.other = '*';
+  writeFileSync(path, JSON.stringify(manifest));
+  const problems = checkContract(folder).join('\n');
+  assert.match(problems, /native entry/);
+  assert.match(problems, /expose src\/cli.js as opencode-cu/);
+  assert.match(problems, /only Node.js/);
 });
 
-test('a missing OpenCode entry or mismatched skill name fails the static contract', () => {
+test('a missing MCP entry or mismatched skill name fails the contract', () => {
   const folder = packageFixture();
-  rmSync(join(folder, 'opencode', 'mcp.js'));
-  writeFileSync(join(folder, 'opencode', 'SKILL.md'), '---\nname: wrong-name\ndescription: test\n---\n');
-  assert.match(checkContract(folder).join('\n'), /missing opencode\/mcp.js/);
-  assert.match(checkContract(folder).join('\n'), /must declare name: opencode-computer-use/);
+  rmSync(join(folder, 'opencode/mcp.js'));
+  writeFileSync(join(folder, 'opencode/SKILL.md'), '---\nname: wrong-name\ndescription: test\n---\n');
+  const problems = checkContract(folder).join('\n');
+  assert.match(problems, /missing opencode\/mcp.js/);
+  assert.match(problems, /must declare name: opencode-computer-use/);
 });

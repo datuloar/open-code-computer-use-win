@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { COMMANDS } from './commands.js';
 
 const sourceRoot = fileURLToPath(new URL('..', import.meta.url));
-const directories = ['src', 'lib', 'backends', 'bin', 'test', 'packaging'];
-const rootFiles = ['SKILL.md', 'LICENSE', 'cordis.patch.yml', 'install.ps1', 'install-opencode.ps1', 'install-vision.ps1', 'package-opencode.ps1'];
+const directories = ['src', 'backends', 'bin', 'test', 'packaging'];
+const rootFiles = ['LICENSE', 'install-opencode.ps1', 'install-vision.ps1', 'package-opencode.ps1'];
 const adapterFiles = ['plugin.js', 'mcp.js', 'SKILL.md', 'INSTRUCTIONS.md', 'DESIGN.md'];
 const documents = {
   'README.opencode.md': 'README.md',
@@ -69,7 +69,7 @@ export function buildOpenCodePackage({ root = sourceRoot, outputDir, repository 
   const files = new Map();
   const add = (target, data) => files.set(target, Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8'));
   for (const directory of directories) {
-    const pattern = directory === 'src' || directory === 'lib' ? /\.js$/
+    const pattern = directory === 'src' ? /\.js$/
       : directory === 'backends' ? /\.(?:ps1|cs)$/ : directory === 'bin' ? /\.cmd$/
         : directory === 'test' ? /\.(?:js|mjs|ps1)$/ : /\.(?:md|yml)$/;
     walk(root, directory, (path, isDirectory) => isDirectory ? !/(?:^|\/)(?:node_modules|dist|\.git)$/.test(path) : pattern.test(path),
@@ -86,7 +86,7 @@ export function buildOpenCodePackage({ root = sourceRoot, outputDir, repository 
   for (const [source, target] of Object.entries(documents)) {
     let body = sourceFile(root, `packaging/${source}`).toString('utf8').replaceAll('\r\n', '\n');
     if (target === 'README.md') {
-      const commands = COMMANDS.map((command) => `dsh-cu ${command.name}${command.args ? ` ${command.args}` : ''}`).join('\n');
+      const commands = COMMANDS.map((command) => `opencode-cu ${command.name}${command.args ? ` ${command.args}` : ''}`).join('\n');
       body = body.replace('{{CLI_REFERENCE}}', `\`\`\`text\n${commands}\n\`\`\``);
     }
     add(target, body);

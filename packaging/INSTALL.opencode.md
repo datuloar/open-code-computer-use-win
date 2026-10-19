@@ -36,19 +36,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install-opencode.ps1
 The execution policy option applies to that PowerShell process. It does not change the machine's
 stored execution policy. Close and restart OpenCode after installation.
 
-## Move an existing installation
-
-Clone [open-code-computer-use-win](https://github.com/datuloar/open-code-computer-use-win) into its own
-permanent folder. From that new folder, replace the explicitly named previous checkout:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install-opencode.ps1 -MigrateFrom 'C:\path\to\previous-checkout'
-```
-
-The installer backs up the configuration, moves only the matching `computer` entry and plugin,
-and preserves the provider, model, countdown, enabled setting, timeout and other servers. A different
-`computer` server is a conflict and is left unchanged. Restart OpenCode after migration.
-
 ## Confirm the connection
 
 ```powershell
@@ -76,9 +63,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install-opencode.ps1 -Anno
 
 The range is 0 to 30 whole seconds. Zero skips the timed wait; the indicator and input safeguards
 remain active. The installer stores this setting as a string in
-`mcp.computer.environment.DSH_CU_ANNOUNCE_SECONDS` and preserves it on subsequent installations.
+`mcp.computer.environment.OPENCODE_CU_ANNOUNCE_SECONDS` and preserves it on subsequent installations.
 Use `-AnnounceSeconds 5` to restore the default. For CLI or other MCP hosts, set
-`DSH_CU_ANNOUNCE_SECONDS`; an explicit `overlay --announce N` overrides it for that CLI session.
+`OPENCODE_CU_ANNOUNCE_SECONDS`; an explicit `overlay --announce N` overrides it for that CLI session.
 Agents should leave this user setting alone while performing desktop tasks.
 
 By default the installer uses `~/.config/opencode/opencode.jsonc` if it exists, otherwise

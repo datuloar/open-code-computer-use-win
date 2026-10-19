@@ -20,8 +20,9 @@ export function configureOpenCode(config, { node = 'node', owner, announceSecond
   const entry = join(root, 'opencode', 'mcp.js');
   if (existing && (!Array.isArray(existing.command) || existing.command[1] !== entry))
     throw new Error('the OpenCode MCP name "computer" is already in use; rename that entry before installing');
-  const announcement = announceSeconds ?? existing?.environment?.DSH_CU_ANNOUNCE_SECONDS;
-  if (announcement !== undefined) parseAnnounceSeconds(announcement, 'DSH_CU_ANNOUNCE_SECONDS');
+  const environment = existing?.environment || {};
+  const announcement = announceSeconds ?? environment.OPENCODE_CU_ANNOUNCE_SECONDS;
+  if (announcement !== undefined) parseAnnounceSeconds(announcement, 'OPENCODE_CU_ANNOUNCE_SECONDS');
   config.mcp = {
     ...config.mcp,
     [SERVER_NAME]: {
@@ -30,8 +31,8 @@ export function configureOpenCode(config, { node = 'node', owner, announceSecond
       command: [node, entry],
       enabled: existing?.enabled ?? true,
       timeout: existing?.timeout ?? 120000,
-      environment: { ...existing?.environment, DSH_CU_THEME: 'opencode', ...(owner ? { DSH_CU_OWNER: owner } : {}),
-        ...(announcement !== undefined ? { DSH_CU_ANNOUNCE_SECONDS: String(parseAnnounceSeconds(announcement)) } : {}) },
+      environment: { ...environment, ...(owner ? { OPENCODE_CU_OWNER: owner } : {}),
+        ...(announcement !== undefined ? { OPENCODE_CU_ANNOUNCE_SECONDS: String(parseAnnounceSeconds(announcement)) } : {}) },
     },
   };
   return config;

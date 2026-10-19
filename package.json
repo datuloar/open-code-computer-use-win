@@ -1,60 +1,51 @@
 {
-  "name": "dsh-cu",
-  "version": "1.4.0",
+  "name": "opencode-computer-use",
+  "version": "1.0.0",
   "description": "Windows desktop tools for OpenCode: UI Automation, OCR, screenshots and gated mouse/keyboard input with a visible ESC indicator.",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "opencode/plugin.js",
   "exports": {
-    ".": "./lib/index.js",
-    "./opencode": "./opencode/plugin.js",
-    "./cordis.patch.yml": "./cordis.patch.yml",
+    ".": "./opencode/plugin.js",
+    "./mcp": "./opencode/mcp.js",
     "./package.json": "./package.json"
   },
   "bin": {
-    "dsh-cu": "src/cli.js"
+    "opencode-cu": "src/cli.js"
   },
   "files": [
-    "lib",
     "src",
     "backends",
     "bin",
     "packaging",
     "package-opencode.ps1",
     "docs",
-    "install.ps1",
     "install-opencode.ps1",
     "install-vision.ps1",
     "opencode",
-    "SKILL.md",
-    "cordis.patch.yml",
     "README.md",
     "LICENSE",
     "test",
     "AGENTS.md"
   ],
   "engines": {
-    "node": ">=18",
-    "dsh": ">=0.1.0-rc.8 <0.2.0 || ^0.1.1-rc.1 || ^0.1.2-alpha.1 || ^0.1.5-rc.1"
+    "node": ">=18"
   },
   "os": [
     "win32"
   ],
   "keywords": [
-    "dsh",
-    "dsh-plugin",
-    "deepseek-harness",
+    "opencode",
+    "mcp",
     "computer-use",
     "gui-automation",
     "automation",
     "screenshot",
     "sendinput",
     "windows",
-    "skill",
-    "opencode",
-    "mcp"
+    "skill"
   ],
   "license": "MIT",
-  "author": "dsh-computer-use contributors",
+  "author": "OpenCode Computer Use contributors",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/datuloar/open-code-computer-use-win.git"
@@ -62,14 +53,6 @@
   "homepage": "https://github.com/datuloar/open-code-computer-use-win#readme",
   "bugs": {
     "url": "https://github.com/datuloar/open-code-computer-use-win/issues"
-  },
-  "dsh": {
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    }
-  },
-  "peerDependencies": {
-    "@deepseek-ai/dsh-skill": ">=0.1.0-rc.8 <0.2.0 || ^0.1.1-rc.1 || ^0.1.2-alpha.1 || ^0.1.5-rc.1"
   },
   "private": true
 }

@@ -11,7 +11,7 @@ import FixtureGuard from './opencode-fixture-guard.js';
 
 const folders = [];
 function fixture() {
-  const directory = mkdtempSync(join(tmpdir(), 'dsh-cu-opencode-'));
+  const directory = mkdtempSync(join(tmpdir(), 'opencode-cu-opencode-'));
   folders.push(directory);
   return directory;
 }
@@ -19,7 +19,7 @@ function fixture() {
 after(() => {
   for (const folder of folders) {
     assert.equal(dirname(resolve(folder)), resolve(tmpdir()));
-    assert.ok(basename(folder).startsWith('dsh-cu-opencode-'));
+    assert.ok(basename(folder).startsWith('opencode-cu-opencode-'));
     rmSync(folder, { recursive: true, force: true });
   }
 });
@@ -59,8 +59,7 @@ test('OpenCode configuration preserves other MCP servers, providers and settings
   for (const key of ['model', 'provider', 'plugin', 'instructions']) assert.deepEqual(config[key], other[key]);
   assert.deepEqual(config.mcp.unity, other.mcp.unity);
   assert.equal(config.mcp.computer.command[0], 'C:/Program Files/nodejs/node.exe');
-  assert.equal(config.mcp.computer.environment.DSH_CU_OWNER, 'opencode:test');
-  assert.equal(config.mcp.computer.environment.DSH_CU_THEME, 'opencode');
+  assert.equal(config.mcp.computer.environment.OPENCODE_CU_OWNER, 'opencode:test');
   assert.throws(() => configureOpenCode({ mcp: { computer: { command: ['unrelated'] } } }), /already in use/);
 });
 
@@ -72,7 +71,7 @@ test('OpenCode hooks stop only their own control and preserve the active session
   const config = {};
   await hooks.config(config);
   assert.ok(config.instructions.includes(instructionsPath));
-  assert.equal(config.mcp.computer.environment.DSH_CU_OWNER, owner);
+  assert.equal(config.mcp.computer.environment.OPENCODE_CU_OWNER, owner);
   const before = (tool, sessionID = 'a', args = {}) => hooks['tool.execute.before']({ tool, sessionID }, { args });
   await before('computer_focus');
   current = owner;
@@ -120,11 +119,11 @@ test('OpenCode countdown selection survives reinstalls and native configuration 
   config = parseConfig(readFileSync(path, 'utf8'));
   const hooks = createOpenCodeHooks({ owner: 'opencode:test', node: process.execPath });
   await hooks.config(config);
-  assert.equal(config.mcp.computer.environment.DSH_CU_ANNOUNCE_SECONDS, '3');
+  assert.equal(config.mcp.computer.environment.OPENCODE_CU_ANNOUNCE_SECONDS, '3');
   assert.equal(config.mcp.computer.environment.KEEP, 'unchanged');
   for (const seconds of [0, 5, 30]) {
     installOpenCode({ configDir, announceSeconds: seconds });
-    assert.equal(parseConfig(readFileSync(path, 'utf8')).mcp.computer.environment.DSH_CU_ANNOUNCE_SECONDS, String(seconds));
+    assert.equal(parseConfig(readFileSync(path, 'utf8')).mcp.computer.environment.OPENCODE_CU_ANNOUNCE_SECONDS, String(seconds));
   }
   for (const seconds of [-1, 31, 'bad', 2.5, true]) {
     const original = readFileSync(path, 'utf8');
@@ -234,39 +233,4 @@ test('the default model changes only when the user explicitly selects one', () =
   installOpenCode({ configDir });
   assert.equal(parseConfig(readFileSync(path, 'utf8')).model, 'opencode/example-free');
   assert.throws(() => installOpenCode({ configDir, model: 'broken' }), /provider\/model/);
-});
-
-test('moving an installation preserves settings and removes only the explicit previous checkout', () => {
-  const configDir = fixture();
-  const previousRoot = join(configDir, 'previous checkout');
-  const path = join(configDir, 'opencode.json');
-  const previousPlugin = pathToFileURL(join(previousRoot, 'opencode', 'plugin.js')).href;
-  const original = { model: 'example/model', provider: { example: { options: { apiKey: 'fixture-only' } } },
-    plugin: [[previousPlugin, { node: process.execPath }], 'another-plugin'], instructions: ['other.md', join(previousRoot, 'opencode', 'INSTRUCTIONS.md')],
-    mcp: { computer: { type: 'local', command: [process.execPath, join(previousRoot, 'opencode', 'mcp.js')], enabled: false,
-      timeout: 45000, environment: { DSH_CU_ANNOUNCE_SECONDS: '3', CUSTOM: 'keep' } }, other: { type: 'remote', url: 'https://example.invalid/mcp' } } };
-  writeFileSync(path, JSON.stringify(original));
-  const installed = installOpenCode({ configDir, migrateFrom: previousRoot });
-  const config = parseConfig(readFileSync(path, 'utf8'));
-  assert.ok(installed.backups);
-  assert.equal(config.model, original.model);
-  assert.deepEqual(config.provider, original.provider);
-  assert.deepEqual(config.mcp.other, original.mcp.other);
-  assert.equal(config.mcp.computer.enabled, false);
-  assert.equal(config.mcp.computer.timeout, 45000);
-  assert.equal(config.mcp.computer.environment.DSH_CU_ANNOUNCE_SECONDS, '3');
-  assert.equal(config.mcp.computer.environment.CUSTOM, 'keep');
-  assert.ok(config.plugin.includes('another-plugin'));
-  assert.deepEqual(config.instructions, ['other.md']);
-  assert.ok(!JSON.stringify(config).includes(previousRoot.replaceAll('\\', '\\\\')));
-  assert.equal(config.plugin.at(-1)[0], pluginUrl);
-  assert.equal(installOpenCode({ configDir, migrateFrom: previousRoot }).backups, null);
-  const unchanged = readFileSync(path, 'utf8');
-  const foreign = structuredClone(original);
-  foreign.mcp.computer.command[1] = join(configDir, 'foreign.js');
-  writeFileSync(path, JSON.stringify(foreign));
-  const foreignText = readFileSync(path, 'utf8');
-  assert.throws(() => installOpenCode({ configDir, migrateFrom: previousRoot }), /does not belong/);
-  assert.equal(readFileSync(path, 'utf8'), foreignText);
-  writeFileSync(path, unchanged);
 });

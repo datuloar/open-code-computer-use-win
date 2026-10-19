@@ -5,7 +5,7 @@ use OCR or screenshots when needed, and send mouse and keyboard input with a vis
 and a physical ESC stop.
 
 This is the standalone [OpenCode repository](https://github.com/datuloar/open-code-computer-use-win).
-It includes its own plugin, MCP server, agent skill and Windows backend. No DSH checkout is required.
+It includes its own plugin, MCP server, agent skill and Windows backend.
 Run it from a clone or an extracted release. No package install, native driver or .NET SDK is required.
 
 The plugin automatically loads a short desktop workflow into OpenCode. The discoverable skill
@@ -64,7 +64,7 @@ download through `install-vision.ps1`. A screenshot sent to a cloud model goes t
 See [desktop behavior and limits](docs/SAFETY.md).
 
 The [alternatives review](docs/opencode-alternatives-2026-10-18.md) compares pinned GitHub sources
-and explains the changes adopted in 1.4.0. Other projects were reviewed as source, not benchmarked.
+and explains the changes adopted in 1.0.0. Other projects were reviewed as source, not benchmarked.
 
 ## Verify
 
@@ -76,9 +76,7 @@ node test/run.mjs
 These checks do not drive the desktop. For a real input test in a dedicated fixture window:
 
 ```powershell
-$env:DSH_CU_THEME = 'opencode'
 node src/cli.js self-test
-Remove-Item Env:\DSH_CU_THEME
 ```
 
 The fixture must stay visible and accept input. It saves `report.json` and screenshots in its
@@ -91,10 +89,9 @@ Follow [PUBLISHING.md](docs/PUBLISHING.md) to build a release ZIP or publish a v
 GitHub Actions runs static checks and unit tests on pushes and pull requests;
 version tags build a ZIP and SHA256 checksum file.
 
-The shared CLI keeps its existing name, `dsh-cu`, and its DSH skill keeps `dsh-computer-use`.
-The OpenCode skill is `opencode-computer-use`; the MCP name is `computer`. These internal
-compatibility names do not connect this installation to a DSH checkout. Contributors should
-read [AGENTS.md](AGENTS.md).
+The package and skill are `opencode-computer-use`, the CLI is `opencode-cu`, and the MCP name
+is `computer`. The root package export is the native OpenCode plugin. Contributors should read
+[AGENTS.md](AGENTS.md).
 
 ## CLI reference
 
@@ -102,37 +99,36 @@ Use `bin\opencode-cu.cmd <command>` for the OpenCode appearance or `node src/cli
 for the shared CLI. The command list below is generated from `src/commands.js` during packaging.
 
 ```text
-dsh-cu see <question> [--region <x> <y> <w> <h>]
-dsh-cu shot [file.png] [--region <x> <y> <w> <h>]
-dsh-cu read [--region <x> <y> <w> <h>] [--lang <tag>] [--json]
-dsh-cu tree [--pid N | --title <text>] [--depth N] [--all] [--json]
-dsh-cu find <text> [--pid N | --title <text>] [--json]
-dsh-cu tap <text> [--pid N | --title <text>]
-dsh-cu inspect <text> [--pid N | --title <text>] [--max-chars N]
-dsh-cu wait-control <text> [--pid N | --title <text>] [--seconds N] [--state exists|enabled]
-dsh-cu move <x> <y>
-dsh-cu click <x> <y> [left|right|middle|double|triple]
-dsh-cu drag <x> <y> <to-x> <to-y>
-dsh-cu wheel <delta> [<x> <y>] [--horizontal]
-dsh-cu type <text>
-dsh-cu key <name> [down|up]
-dsh-cu keys <combo>
-dsh-cu clipboard [get|set <text>|clear]
-dsh-cu pos
-dsh-cu windows [--json]
-dsh-cu focus <pid> | --title <text>
-dsh-cu wait-window <text> [seconds]
-dsh-cu run <command line>
-dsh-cu broker [start|stop|status]
-dsh-cu overlay [--announce N] [--quiet] [--hide-cursor]
-dsh-cu overlay-state
-dsh-cu display
-dsh-cu mcp
-dsh-cu doctor
-dsh-cu self-test
+opencode-cu see <question> [--region <x> <y> <w> <h>]
+opencode-cu shot [file.png] [--region <x> <y> <w> <h>]
+opencode-cu read [--region <x> <y> <w> <h>] [--lang <tag>] [--json]
+opencode-cu tree [--pid N | --title <text>] [--depth N] [--all] [--json]
+opencode-cu find <text> [--pid N | --title <text>] [--json]
+opencode-cu tap <text> [--pid N | --title <text>]
+opencode-cu inspect <text> [--pid N | --title <text>] [--max-chars N]
+opencode-cu wait-control <text> [--pid N | --title <text>] [--seconds N] [--state exists|enabled]
+opencode-cu move <x> <y>
+opencode-cu click <x> <y> [left|right|middle|double|triple]
+opencode-cu drag <x> <y> <to-x> <to-y>
+opencode-cu wheel <delta> [<x> <y>] [--horizontal]
+opencode-cu type <text>
+opencode-cu key <name> [down|up]
+opencode-cu keys <combo>
+opencode-cu clipboard [get|set <text>|clear]
+opencode-cu pos
+opencode-cu windows [--json]
+opencode-cu focus <pid> | --title <text>
+opencode-cu wait-window <text> [seconds]
+opencode-cu run <command line>
+opencode-cu broker [start|stop|status]
+opencode-cu overlay [--announce N] [--quiet] [--hide-cursor]
+opencode-cu overlay-state
+opencode-cu display
+opencode-cu mcp
+opencode-cu doctor
+opencode-cu self-test
 ```
 
 ## License
 
-MIT. See [LICENSE](LICENSE). This is an independent integration built on the shared
-[dsh-computer-use-win](https://github.com/datuloar/dsh-computer-use-win) backend.
+MIT. See [LICENSE](LICENSE).

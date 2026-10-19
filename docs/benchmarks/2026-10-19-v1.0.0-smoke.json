@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "tools": [
+    {
+      "name": "skill",
+      "status": "completed"
+    },
+    {
+      "name": "computer_windows",
+      "status": "completed"
+    },
+    {
+      "name": "computer_indicator",
+      "status": "completed"
+    },
+    {
+      "name": "read",
+      "status": "completed"
+    }
+  ],
+  "instructionsLoaded": true,
+  "guidance": {
+    "toolChoice": true,
+    "smallObservations": true,
+    "inputVerification": true,
+    "sessionEfficiency": true,
+    "skillDiscovery": true,
+    "semanticVerification": true,
+    "conditionalReadiness": true
+  },
+  "stoppedBeforeFinal": true
+}

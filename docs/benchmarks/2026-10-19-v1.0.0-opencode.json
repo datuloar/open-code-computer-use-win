@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "suite": "dsh-cu-desktop",
+  "suite": "opencode-cu-desktop",
   "status": "passed",
-  "startedAt": "2026-10-19T02:51:49.003Z",
-  "version": "1.4.0",
-  "sourceSha256": "d1bc22067a7ec1acef6fbca04297b825dc623b6705549651d5b0474f63854297",
+  "startedAt": "2026-10-19T03:30:17.909Z",
+  "version": "1.0.0",
+  "sourceSha256": "b6826b8a7999ded3725050d7aad76d9c1a70ab92be2509b75c7fe15356ef0b6b",
   "environment": {
     "platform": "win32",
     "osRelease": "10.0.26200",
@@ -22,13 +22,13 @@
       "id": "documentation-and-command-surface-agree",
       "name": "documentation and command surface agree",
       "status": "passed",
-      "durationMs": 4
+      "durationMs": 2
     },
     {
       "id": "input-and-focus-refuse-before-the-indicator-starts",
       "name": "input and focus refuse before the indicator starts",
       "status": "passed",
-      "durationMs": 108
+      "durationMs": 105
     },
     {
       "id": "invalid-mcp-arguments-never-start-the-indicator",
@@ -40,33 +40,33 @@
       "id": "mcp-focus-starts-a-countdown-and-blocks-concurrent-input",
       "name": "MCP focus starts a countdown and blocks concurrent input",
       "status": "passed",
-      "detail": "6359 ms including cold startup",
+      "detail": "6314 ms including cold startup",
       "metrics": {
-        "coldStartWithCountdownMs": 6359
+        "coldStartWithCountdownMs": 6314
       },
-      "durationMs": 6360
+      "durationMs": 6314
     },
     {
       "id": "warm-backend-reads-controls-and-recovers-after-an-error",
       "name": "warm backend reads controls and recovers after an error",
       "status": "passed",
-      "detail": "171 ms for the warm tree",
+      "detail": "164 ms for the warm tree",
       "metrics": {
-        "warmTreeMs": 171
+        "warmTreeMs": 164
       },
-      "durationMs": 501
+      "durationMs": 505
     },
     {
       "id": "off-screen-move-and-drag-fail-before-changing-the-pointer",
       "name": "off-screen move and drag fail before changing the pointer",
       "status": "passed",
-      "durationMs": 1774
+      "durationMs": 1875
     },
     {
       "id": "typing-preserves-unicode-whitespace-tabs-and-newlines",
       "name": "typing preserves Unicode, whitespace, tabs and newlines",
       "status": "passed",
-      "durationMs": 2307
+      "durationMs": 2357
     },
     {
       "id": "typing-leaves-the-clipboard-sequence-unchanged",
@@ -84,61 +84,61 @@
       "id": "tap-refuses-a-disabled-exact-target-instead-of-its-enabled-substring",
       "name": "tap refuses a disabled exact target instead of its enabled substring",
       "status": "passed",
-      "durationMs": 205
+      "durationMs": 216
     },
     {
       "id": "a-named-button-click-reaches-the-fixture",
       "name": "a named button click reaches the fixture",
       "status": "passed",
-      "durationMs": 372
+      "durationMs": 392
     },
     {
       "id": "tap-considers-exact-duplicates-beyond-its-displayed-candidate-limit",
       "name": "tap considers exact duplicates beyond its displayed candidate limit",
       "status": "passed",
-      "durationMs": 166
+      "durationMs": 189
     },
     {
       "id": "tap-refuses-a-covered-target-without-clicking-the-covering-window",
       "name": "tap refuses a covered target without clicking the covering window",
       "status": "passed",
-      "durationMs": 401
+      "durationMs": 475
     },
     {
       "id": "typed-flag-names-and-whitespace-remain-literal-text",
       "name": "typed flag names and whitespace remain literal text",
       "status": "passed",
-      "durationMs": 676
+      "durationMs": 723
     },
     {
       "id": "screenshot-returns-png-pixels",
       "name": "screenshot returns PNG pixels",
       "status": "passed",
-      "durationMs": 618
+      "durationMs": 671
     },
     {
       "id": "invalid-key-combinations-release-held-modifiers",
       "name": "invalid key combinations release held modifiers",
       "status": "passed",
-      "durationMs": 372
+      "durationMs": 380
     },
     {
       "id": "stop-removes-state-and-leaves-the-cursor-alone",
       "name": "stop removes state and leaves the cursor alone",
       "status": "passed",
-      "durationMs": 141
+      "durationMs": 128
     },
     {
       "id": "key-releases-still-work-after-control-stops",
       "name": "key releases still work after control stops",
       "status": "passed",
-      "durationMs": 587
+      "durationMs": 595
     },
     {
       "id": "read-only-inspection-bounds-values-and-hides-password-fields-without-starting-control",
       "name": "read-only inspection bounds values and hides password fields without starting control",
       "status": "passed",
-      "durationMs": 903
+      "durationMs": 900
     },
     {
       "id": "conditional-waiting-observes-readiness-without-moving-the-pointer-or-starting-control",
@@ -146,9 +146,9 @@
       "status": "passed",
       "metrics": {
         "waitChecks": 2,
-        "waitForReadyMs": 655
+        "waitForReadyMs": 641
       },
-      "durationMs": 2467
+      "durationMs": 2499
     },
     {
       "id": "a-configured-one-second-countdown-completes-before-control-is-ready",
@@ -156,75 +156,75 @@
       "status": "passed",
       "metrics": {
         "configuredSeconds": 1,
-        "startupWithCountdownMs": 2253
+        "startupWithCountdownMs": 2313
       },
-      "durationMs": 2980
+      "durationMs": 3069
     },
     {
       "id": "stopping-during-the-countdown-never-reports-control-ready",
       "name": "stopping during the countdown never reports control ready",
       "status": "passed",
-      "durationMs": 1628
+      "durationMs": 1627
     },
     {
       "id": "cancelling-indicator-startup-leaves-no-late-indicator-behind",
       "name": "cancelling indicator startup leaves no late indicator behind",
       "status": "passed",
-      "durationMs": 1103
+      "durationMs": 1116
     },
     {
       "id": "a-stop-interrupts-text-within-the-current-chunk",
       "name": "a stop interrupts text within the current chunk",
       "status": "passed",
-      "detail": "23 ms from stop request to MCP refusal",
+      "detail": "37 ms from stop request to MCP refusal",
       "metrics": {
-        "stopToRefusalMs": 23
+        "stopToRefusalMs": 37
       },
-      "durationMs": 2378
+      "durationMs": 2488
     },
     {
       "id": "mcp-cancellation-interrupts-input-and-releases-the-desktop",
       "name": "MCP cancellation interrupts input and releases the desktop",
       "status": "passed",
-      "detail": "62 ms from cancellation to cleanup",
+      "detail": "65 ms from cancellation to cleanup",
       "metrics": {
-        "cancelToCleanupMs": 62
+        "cancelToCleanupMs": 65
       },
-      "durationMs": 2336
+      "durationMs": 2382
     },
     {
       "id": "cursor-replacement-is-opt-in-and-restored-on-stop",
       "name": "cursor replacement is opt-in and restored on stop",
       "status": "passed",
-      "durationMs": 2421
+      "durationMs": 2433
     },
     {
       "id": "killing-an-indicator-refuses-input-and-repairs-its-hidden-cursor",
       "name": "killing an indicator refuses input and repairs its hidden cursor",
       "status": "passed",
-      "durationMs": 2464
+      "durationMs": 2511
     },
     {
       "id": "a-stale-pid-record-cannot-kill-the-fixture",
       "name": "a stale pid record cannot kill the fixture",
       "status": "passed",
-      "durationMs": 627
+      "durationMs": 664
     },
     {
       "id": "another-mcp-client-cannot-take-or-stop-this-desktop-session",
       "name": "another MCP client cannot take or stop this desktop session",
       "status": "passed",
-      "durationMs": 4638
+      "durationMs": 4773
     },
     {
       "id": "mcp-disconnect-stops-its-owned-indicator",
       "name": "MCP disconnect stops its owned indicator",
       "status": "passed",
-      "durationMs": 1733
+      "durationMs": 1746
     }
   ],
-  "finishedAt": "2026-10-19T02:52:30.969Z",
-  "durationMs": 41966,
+  "finishedAt": "2026-10-19T03:31:00.759Z",
+  "durationMs": 42850,
   "summary": {
     "passed": 30,
     "failed": 0

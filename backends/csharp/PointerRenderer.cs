@@ -1,4 +1,4 @@
-namespace DshCu
+namespace OpenCodeCu
 {
 
 public sealed class PointerRenderer : IDisposable
@@ -11,7 +11,6 @@ public sealed class PointerRenderer : IDisposable
     private const double ArrowScale = 1.85;
     private const double RippleSeconds = 0.62;
     private const double RingRadius = 15;
-    private const double RingBreathSeconds = 2.2;
     private const double FlashSeconds = 0.26;
 
     private readonly List<PointF> _trail = new List<PointF>();
@@ -152,7 +151,7 @@ public sealed class PointerRenderer : IDisposable
     private void DrawRing(Graphics graphics, PointF hotspot)
     {
         PointF center = new PointF(hotspot.X + Theme.Pxf(5), hotspot.Y + Theme.Pxf(5));
-        double breathe = Theme.OpenCode ? 0.5 : 0.5 + 0.5 * Math.Sin(_breath * (2 * Math.PI / RingBreathSeconds));
+        double breathe = 0.5;
         float radius = Theme.Pxf(RingRadius + 1.2 * breathe + 3.0 * _flash);
         int core = (int)(120 + 40 * breathe + 90 * _flash);
 

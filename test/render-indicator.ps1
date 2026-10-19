@@ -6,21 +6,20 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$env:DSH_CU_THEME = $Theme
-$env:DSH_CU_UI_SCALE = $Scale.ToString([Globalization.CultureInfo]::InvariantCulture)
+$env:OPENCODE_CU_UI_SCALE = $Scale.ToString([Globalization.CultureInfo]::InvariantCulture)
 $root = Split-Path -Parent $PSScriptRoot
 . (Join-Path $root 'backends\windows.ps1') display | Out-Null
-$canvasWidth = [DshCu.Theme]::Px($Width)
-$rowHeight = [DshCu.PanelRenderer]::CanvasHeight()
-$renderer = New-Object DshCu.PanelRenderer($canvasWidth)
-$window = New-Object DshCu.LayeredWindow((New-Object Drawing.Rectangle(0, 0, $canvasWidth, $rowHeight)))
-$canvas = [DshCu.Theme]::Canvas($canvasWidth, ($rowHeight * 3))
+$canvasWidth = [OpenCodeCu.Theme]::Px($Width)
+$rowHeight = [OpenCodeCu.PanelRenderer]::CanvasHeight()
+$renderer = New-Object OpenCodeCu.PanelRenderer($canvasWidth)
+$window = New-Object OpenCodeCu.LayeredWindow((New-Object Drawing.Rectangle(0, 0, $canvasWidth, $rowHeight)))
+$canvas = [OpenCodeCu.Theme]::Canvas($canvasWidth, ($rowHeight * 3))
 $graphics = [Drawing.Graphics]::FromImage($canvas)
 try {
     $graphics.Clear([Drawing.Color]::FromArgb(38, 38, 38))
     $field = $renderer.GetType().GetField('_canvas', [Reflection.BindingFlags]'Instance,NonPublic')
     for ($row = 0; $row -lt 3; $row++) {
-        $state = New-Object DshCu.PanelState
+        $state = New-Object OpenCodeCu.PanelState
         $state.Announcing = $row -eq 0
         $state.SecondsLeft = 5
         $state.Remaining = 0.75

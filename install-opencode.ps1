@@ -3,7 +3,6 @@ param(
     [string]$ConfigDir,
     [string]$ConfigPath,
     [string]$Model,
-    [string]$MigrateFrom,
     [ValidateRange(0, 30)][int]$AnnounceSeconds = 5,
     [switch]$Uninstall
 )
@@ -18,7 +17,6 @@ $arguments = @((Join-Path $here 'src\install-opencode.js'))
 if ($ConfigDir) { $arguments += @('--config-dir', $ConfigDir) }
 if ($ConfigPath) { $arguments += @('--config', $ConfigPath) }
 if ($Model) { $arguments += @('--model', $Model) }
-if ($MigrateFrom) { $arguments += @('--migrate-from', $MigrateFrom) }
 if ($PSBoundParameters.ContainsKey('AnnounceSeconds')) { $arguments += @('--announce-seconds', "$AnnounceSeconds") }
 if ($Uninstall) { $arguments += '--uninstall' }
 & node @arguments

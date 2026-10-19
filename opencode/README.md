@@ -1,7 +1,7 @@
 # OpenCode Adapter
 
 This directory contains the local plugin entry, branded MCP entry, runtime instructions and
-`opencode-computer-use` skill. The backend and CLI are shared with the DSH integration.
+`opencode-computer-use` skill. The Windows backend and `opencode-cu` CLI are included in this repository.
 
 - Users: [install, update and remove](../docs/INSTALL.md).
 - Setup agents: [installation procedure](../docs/AGENT_SETUP.md).
