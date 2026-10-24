@@ -154,3 +154,15 @@ test('window flags pick one window and bound the depth', () => {
   assert.throws(() => parseWindowArgs(['--depth', '99']), /between 1 and 20/);
   assert.throws(() => parseWindowArgs(['--everything']), /unknown flag/);
 });
+
+test('named controls accept an observed role without changing window selection', () => {
+  const options = parseWindowArgs(['Oval', '--pid', '42', '--role', 'Button'], true);
+  assert.equal(options.role, 'Button');
+  assert.equal(options.pid, 42);
+  assert.deepEqual(options.rest, ['Oval']);
+  assert.equal(parseControlArgs(['Oval', '--role', 'ListItem']).role, 'ListItem');
+  assert.equal(parseControlArgs(['Oval', '--role', 'button', '--seconds', '1'], true).role, 'button');
+  assert.throws(() => parseWindowArgs(['--role', 'Button']), /unknown flag/);
+  for (const role of [undefined, '', '--pid', 'Button.*', 'x'.repeat(41)])
+    assert.throws(() => parseWindowArgs(['Oval', '--role', role], true), /role must be/);
+});

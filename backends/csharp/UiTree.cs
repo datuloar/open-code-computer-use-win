@@ -81,9 +81,9 @@ public static class UiTree
         return text.ToString().TrimEnd();
     }
 
-    public static string Search(AutomationElement window, string needle, bool json)
+    public static string Search(AutomationElement window, string needle, bool json, string role = "")
     {
-        List<Node> matches = Matches(window, needle);
+        List<Node> matches = Matches(window, needle, role);
         bool truncated = matches.Count > MatchCap;
         if (truncated) matches.RemoveRange(MatchCap, matches.Count - MatchCap);
         if (json) return Json(matches);
@@ -94,21 +94,21 @@ public static class UiTree
         return text.ToString().TrimEnd();
     }
 
-    public static Node Only(AutomationElement window, string needle)
+    public static Node Only(AutomationElement window, string needle, string role = "")
     {
-        Node node = Select(window, needle, false);
+        Node node = Select(window, needle, false, role);
         if (!node.Enabled) throw new InvalidOperationException("the named control is disabled; wait for it to become enabled");
         return node;
     }
 
-    public static Node Optional(AutomationElement window, string needle)
+    public static Node Optional(AutomationElement window, string needle, string role = "")
     {
-        return Select(window, needle, true);
+        return Select(window, needle, true, role);
     }
 
-    private static Node Select(AutomationElement window, string needle, bool optional)
+    private static Node Select(AutomationElement window, string needle, bool optional, string role)
     {
-        List<Node> matches = Matches(window, needle);
+        List<Node> matches = Matches(window, needle, role);
         if (matches.Count == 0)
         {
             if (optional) return null;
@@ -135,14 +135,16 @@ public static class UiTree
             {
                 text.Append("\n  " + shortlist[index].Line().TrimStart());
             }
-            text.Append("\nName one of them exactly, or click the coordinates.");
+            text.Append("\nUse an observed role with --role (MCP role), a more specific name, or fresh coordinates.");
             throw new InvalidOperationException(text.ToString());
         }
         return shortlist[0];
     }
 
-    public static void EnsureVisibleAt(AutomationElement window, int x, int y)
+    public static void EnsureVisibleAt(AutomationElement window, Node node)
     {
+        int x = node.CenterX;
+        int y = node.CenterY;
         IntPtr target = Handle(window);
         if (target == IntPtr.Zero) throw new InvalidOperationException("the target window disappeared; read it again before clicking");
         POINT point = new POINT();
@@ -150,8 +152,26 @@ public static class UiTree
         point.Y = y;
         IntPtr hit = Native.GetAncestor(Native.WindowFromPoint(point), Native.GA_ROOT);
         if (hit == target) return;
+        if (hit != IntPtr.Zero && OwnsSurface(node.Element, window, hit)) return;
         throw new InvalidOperationException(
             "the control at " + x + "," + y + " is covered by another window - focus the target first");
+    }
+
+    private static bool OwnsSurface(AutomationElement control, AutomationElement window, IntPtr surface)
+    {
+        try
+        {
+            for (int depth = 0; control != null && depth < 32; depth++)
+            {
+                if (control.Equals(window)) return false;
+                if (Handle(control) == surface) return true;
+                control = TreeWalker.RawViewWalker.GetParent(control);
+            }
+        }
+        catch
+        {
+        }
+        return false;
     }
 
     private static IntPtr Handle(AutomationElement window)
@@ -168,7 +188,7 @@ public static class UiTree
         }
     }
 
-    private static List<Node> Matches(AutomationElement window, string needle)
+    private static List<Node> Matches(AutomationElement window, string needle, string role)
     {
         string wanted = needle.ToLowerInvariant();
         List<Node> nodes = Collect(window, SearchDepth, false, NodeCap * 4 + 1);
@@ -178,6 +198,7 @@ public static class UiTree
         for (int index = 0; index < nodes.Count; index++)
         {
             Node node = nodes[index];
+            if (!string.IsNullOrEmpty(role) && !string.Equals(node.Role, role, StringComparison.OrdinalIgnoreCase)) continue;
             if (node.Name.ToLowerInvariant().Contains(wanted) || node.Id.ToLowerInvariant().Contains(wanted))
             {
                 matches.Add(node);

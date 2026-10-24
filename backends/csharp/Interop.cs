@@ -250,7 +250,7 @@ public static class Native
         IntPtr foreground = GetForegroundWindow();
         uint foregroundThread = foreground == IntPtr.Zero ? 0 : GetWindowThreadProcessId(foreground, out holder);
 
-        ShowWindow(handle, 9);
+        if (IsIconic(handle)) ShowWindow(handle, 9);
         List<uint> attached = new List<uint>();
         foreach (uint thread in new uint[] { target, foregroundThread })
         {

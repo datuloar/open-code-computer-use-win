@@ -11,6 +11,7 @@ param(
     [int]$MaxChars = 1000,
     [string]$TargetPid = '',
     [string]$TargetTitle = '',
+    [string]$ControlRole = '',
     [string]$Language = '',
     [switch]$Quiet,
     [switch]$Horizontal,
@@ -35,6 +36,7 @@ function Set-Invocation {
     $script:MaxChars = 1000
     $script:TargetPid = ''
     $script:TargetTitle = ''
+    $script:ControlRole = ''
     $script:Language = ''
     $script:Quiet = $false
     $script:Horizontal = $false
@@ -42,7 +44,7 @@ function Set-Invocation {
     $script:All = $false
     $script:Json = $false
     $flags = switch ($script:Command) {
-        { $_ -in @('tree', 'find', 'tap', 'inspect') } { @('-Depth', '-TargetPid', '-TargetTitle', '-MaxChars', '-All', '-Json') }
+        { $_ -in @('tree', 'find', 'tap', 'inspect') } { @('-Depth', '-TargetPid', '-TargetTitle', '-ControlRole', '-MaxChars', '-All', '-Json') }
         { $_ -in @('overlay', 'overlay-start') } { @('-Announce', '-Quiet', '-HideCursor') }
         'read' { @('-Language', '-Json') }
         'wheel' { @('--horizontal') }
@@ -61,6 +63,7 @@ function Set-Invocation {
             '-MaxChars' { $index++; if ($null -ne $next) { $script:MaxChars = [int]$next } }
             '-TargetPid' { $index++; if ($null -ne $next) { $script:TargetPid = $next } }
             '-TargetTitle' { $index++; if ($null -ne $next) { $script:TargetTitle = $next } }
+            '-ControlRole' { $index++; if ($null -ne $next) { $script:ControlRole = $next } }
             '-Language' { $index++; if ($null -ne $next) { $script:Language = $next } }
             '-Quiet' { $script:Quiet = $true }
             '-HideCursor' { $script:HideCursor = $true }
@@ -419,21 +422,21 @@ function Invoke-Dispatch {
         'find' {
             $needle = Arg 0
             if ([string]::IsNullOrWhiteSpace($needle)) { throw 'find needs the text to look for' }
-            Write-Output ([OpenCodeCu.UiTree]::Search((Resolve-UiWindow), $needle, [bool]$Json))
+            Write-Output ([OpenCodeCu.UiTree]::Search((Resolve-UiWindow), $needle, [bool]$Json, $ControlRole))
         }
         'tap' {
             $needle = Arg 0
             if ([string]::IsNullOrWhiteSpace($needle)) { throw 'tap needs the name of the control to click' }
             $window = Resolve-UiWindow
-            $node = [OpenCodeCu.UiTree]::Only($window, $needle)
-            [OpenCodeCu.UiTree]::EnsureVisibleAt($window, $node.CenterX, $node.CenterY)
+            $node = [OpenCodeCu.UiTree]::Only($window, $needle, $ControlRole)
+            [OpenCodeCu.UiTree]::EnsureVisibleAt($window, $node)
             [OpenCodeCu.InputInjector]::Click($node.CenterX, $node.CenterY, 'left')
             Write-Output ("TAPPED " + $node.Role + " '" + $node.Label() + "' at " + $node.CenterX + "," + $node.CenterY)
         }
         'inspect' {
             $needle = Arg 0
             if ([string]::IsNullOrWhiteSpace($needle)) { throw 'inspect needs the name of the control' }
-            Write-Output ([OpenCodeCu.ControlState]::Inspect((Resolve-UiWindow), $needle, $MaxChars))
+            Write-Output ([OpenCodeCu.ControlState]::Inspect((Resolve-UiWindow), $needle, $MaxChars, $ControlRole))
         }
         'move' { [OpenCodeCu.InputInjector]::Move((Test-Integer (Arg 0) 'x'), (Test-Integer (Arg 1) 'y')) }
         'click' {

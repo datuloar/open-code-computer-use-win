@@ -3,11 +3,11 @@ namespace OpenCodeCu
 
 public static class ControlState
 {
-    public static string Inspect(AutomationElement window, string name, int maxChars)
+    public static string Inspect(AutomationElement window, string name, int maxChars, string role = "")
     {
         if (maxChars < 1 || maxChars > 2000)
             throw new InvalidOperationException("max chars must be between 1 and 2000");
-        UiTree.Node node = UiTree.Optional(window, name);
+        UiTree.Node node = UiTree.Optional(window, name, role);
         if (node == null) return "{\"found\":false}";
         AutomationElement element = node.Element;
         node.Enabled = element.Current.IsEnabled;

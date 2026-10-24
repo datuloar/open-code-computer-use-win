@@ -58,6 +58,10 @@ For operating the desktop, read [opencode/SKILL.md](opencode/SKILL.md).
   Preserve four edge strips instead of a full-screen glow bitmap.
 - `tap` must refuse ambiguous and covered controls. Keep Chromium accessibility warmup and the
   refusal to use minimized window coordinates. UIA is not a browser DOM.
+- An observed role can disambiguate a container and its child; duplicates within the same role
+  still fail. A popup is clickable only when its native hit surface belongs to the selected
+  control's UIA ancestry. Sharing a process or owner alone does not prove visibility.
+- Focusing a window preserves its current size and maximized state. Restore only minimized windows.
 - Configuration changes preserve unrelated settings and create backups. Do not print or package
   user configs, credentials, machine paths, screenshots of user apps or optional vision weights.
 - The package builder copies only its allowlist, rejects symlinks, and refuses an existing output

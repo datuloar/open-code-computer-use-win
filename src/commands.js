@@ -163,15 +163,26 @@ export function parseReadArgs(args) {
   return { region, language, json };
 }
 
-export function parseWindowArgs(args) {
+export function controlRole(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z]{1,40}$/.test(value))
+    throw new ToolError('role must be an observed UIA role such as Button or ListItem');
+  return value;
+}
+
+export function parseWindowArgs(args, allowRole = false) {
   const rest = [];
   let depth = null;
   let pid = null;
   let title = null;
   let json = false;
   let all = false;
+  let role;
   for (let index = 0; index < args.length; index++) {
     const argument = args[index];
+    if (argument === '--role' && allowRole) {
+      role = controlRole(args[++index]);
+      continue;
+    }
     if (argument === '--json') {
       json = true;
       continue;
@@ -198,7 +209,7 @@ export function parseWindowArgs(args) {
     rest.push(argument);
   }
   if (pid !== null && title !== null) throw new ToolError('--pid and --title both pick the window, pass one of them');
-  return { rest, depth, pid, title, json, all };
+  return { rest, depth, pid, title, json, all, ...(role === undefined ? {} : { role }) };
 }
 
 function windowFlags(options) {
@@ -208,6 +219,7 @@ function windowFlags(options) {
     ...(options.depth === null || options.depth === undefined ? [] : ['-Depth', String(options.depth)]),
     ...(options.pid === null || options.pid === undefined ? [] : ['-TargetPid', String(options.pid)]),
     ...(options.title ? ['-TargetTitle', options.title] : []),
+    ...(options.role ? ['-ControlRole', options.role] : []),
   ];
 }
 
@@ -230,7 +242,7 @@ export function parseControlArgs(args, waiting = false) {
       state = oneOf(args[++index], ['exists', 'enabled'], 'control state');
     } else rest.push(flag);
   }
-  const options = parseWindowArgs(rest);
+  const options = parseWindowArgs(rest, true);
   if (options.all || options.json || options.depth !== null)
     throw new ToolError('control inspection takes a name, window target and documented control flags only');
   return { ...options, needle: required(options.rest.join(' '), 'the name of the control'), maxChars, seconds, state };
@@ -271,13 +283,13 @@ async function runTree(args) {
 }
 
 async function runFind(args) {
-  const options = parseWindowArgs(args);
+  const options = parseWindowArgs(args, true);
   const needle = required(options.rest.join(' '), 'the text to look for');
   console.log(await ps(['find', needle, ...windowFlags(options)]));
 }
 
 async function runTap(args) {
-  const options = parseWindowArgs(args);
+  const options = parseWindowArgs(args, true);
   if (options.json) throw new ToolError('tap reports what it clicked, it takes no --json');
   const needle = required(options.rest.join(' '), 'the name of the control to click');
   console.log(await input(['tap', needle, ...windowFlags(options)]));
@@ -527,26 +539,26 @@ export const COMMANDS = [
   },
   {
     name: 'find',
-    args: '<text> [--pid N | --title <text>] [--json]',
+    args: '<text> [--pid N | --title <text>] [--role <role>] [--json]',
     summary: 'controls whose name or id contains the text',
     run: runFind,
   },
   {
     name: 'tap',
-    args: '<text> [--pid N | --title <text>]',
+    args: '<text> [--pid N | --title <text>] [--role <role>]',
     summary: 'click the one control named like that, or refuse and list the candidates',
     gated: true,
     run: runTap,
   },
   {
     name: 'inspect',
-    args: '<text> [--pid N | --title <text>] [--max-chars N]',
+    args: '<text> [--pid N | --title <text>] [--role <role>] [--max-chars N]',
     summary: 'read one unique control value and state as JSON; protected values stay hidden',
     run: runInspect,
   },
   {
     name: 'wait-control',
-    args: '<text> [--pid N | --title <text>] [--seconds N] [--state exists|enabled]',
+    args: '<text> [--pid N | --title <text>] [--role <role>] [--seconds N] [--state exists|enabled]',
     summary: 'wait for one named control with bounded polling; no input or focus change',
     run: runWaitControl,
   },

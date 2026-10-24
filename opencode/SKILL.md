@@ -38,6 +38,8 @@ image merely from its path. Do not try local vision repeatedly if its installati
 
 Bring a minimized or covered target forward with `computer_focus`, then inspect it. Use
 `computer_tap` for a uniquely named control; it refuses ambiguous and covered targets. Do not
+guess between duplicate labels. Pass an observed `role`, such as `Button`, to `computer_find`,
+`computer_tap` or conditional `computer_wait` to distinguish a container from its child control. Do not
 replace a named field or button with a coordinate click. Before typing, focus the selected window
 and tap the named field. Reading that window's UIA tree does not bring it forward or focus a field.
 Reuse confirmed focus only within the current interaction; recheck after any interruption. Use

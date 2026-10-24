@@ -18,7 +18,7 @@ import {
   sleep,
   useHost,
 } from './backend.js';
-import { commandIsGated, findCommand } from './commands.js';
+import { commandIsGated, controlRole, findCommand } from './commands.js';
 import { BackendHost } from './host.js';
 import { ToolError } from './tool-error.js';
 
@@ -66,6 +66,9 @@ const point = {
   x: { type: 'integer', description: 'screen x in physical pixels' },
   y: { type: 'integer', description: 'screen y in physical pixels' },
 };
+
+const role = { role: { type: 'string', description: 'Observed UIA role, e.g. Button' } };
+const roleArgs = (args) => args.role === undefined ? [] : ['--role', controlRole(args.role)];
 
 function schema(properties, required = []) {
   return { type: 'object', properties, required, additionalProperties: false };
@@ -116,11 +119,11 @@ export const TOOLS = [
   {
     name: 'find',
     description: 'Find controls by name/id. Set details to read one unique control value and state; protected values stay hidden.',
-    inputSchema: schema({ text: { type: 'string' }, ...target, details: { type: 'boolean' },
+    inputSchema: schema({ text: { type: 'string' }, ...target, ...role, details: { type: 'boolean' },
       max_chars: { type: 'integer', minimum: 1, maximum: 2000 } }, ['text']),
     cli: (args) => {
       if (args.max_chars !== undefined && !args.details) throw new ToolError('max_chars requires details: true');
-      return [args.details ? 'inspect' : 'find', args.text, ...targetArgs(args),
+      return [args.details ? 'inspect' : 'find', args.text, ...targetArgs(args), ...roleArgs(args),
         ...(args.max_chars !== undefined ? ['--max-chars', String(args.max_chars)] : [])];
     },
   },
@@ -129,9 +132,9 @@ export const TOOLS = [
     description:
       'Click the one control whose name matches the text. Refuses and lists candidates when the name ' +
       'is ambiguous, and refuses when another window covers the control.',
-    inputSchema: schema({ text: { type: 'string' }, ...target }, ['text']),
+    inputSchema: schema({ text: { type: 'string' }, ...target, ...role }, ['text']),
     gated: true,
-    cli: (args) => ['tap', String(args.text), ...targetArgs(args)],
+    cli: (args) => ['tap', String(args.text), ...targetArgs(args), ...roleArgs(args)],
   },
   {
     name: 'read_text',
@@ -231,13 +234,13 @@ export const TOOLS = [
   {
     name: 'wait',
     description: 'Wait up to 30 seconds. With text, poll a named control until it exists or is enabled; no input is sent.',
-    inputSchema: schema({ seconds: { type: 'number', minimum: 0, maximum: MAX_WAIT_SECONDS }, ...target,
+    inputSchema: schema({ seconds: { type: 'number', minimum: 0, maximum: MAX_WAIT_SECONDS }, ...target, ...role,
       text: { type: 'string' }, state: { type: 'string', enum: ['exists', 'enabled'] } }, ['seconds']),
     local: async (args, signal) => {
       if (args.text !== undefined)
-        return runCli(['wait-control', args.text, ...targetArgs(args), '--seconds', String(args.seconds),
+        return runCli(['wait-control', args.text, ...targetArgs(args), ...roleArgs(args), '--seconds', String(args.seconds),
           ...(args.state ? ['--state', args.state] : [])], signal);
-      if (args.window !== undefined || args.pid !== undefined || args.state !== undefined)
+      if (args.window !== undefined || args.pid !== undefined || args.state !== undefined || args.role !== undefined)
         throw new ToolError('a conditional wait requires text');
       const seconds = Math.max(0, Math.min(MAX_WAIT_SECONDS, Number(args.seconds) || 0));
       await delay(seconds * 1000, undefined, { signal });

@@ -52,6 +52,19 @@ $button.Location = New-Object System.Drawing.Point(32, 430)
 $button.Size = New-Object System.Drawing.Size(180, 50)
 $button.Add_Click({ [IO.File]::WriteAllText((Join-Path $Folder 'clicked.txt'), 'clicked') })
 $form.Controls.Add($button)
+$roleLabel = New-Object System.Windows.Forms.Label
+$roleLabel.AccessibleName = 'Role target'
+$roleLabel.Text = 'Role target'
+$roleLabel.Location = New-Object System.Drawing.Point(650, 55)
+$roleLabel.Size = New-Object System.Drawing.Size(120, 22)
+$form.Controls.Add($roleLabel)
+$roleButton = New-Object System.Windows.Forms.Button
+$roleButton.AccessibleName = 'Role target'
+$roleButton.Text = 'Role target'
+$roleButton.Location = New-Object System.Drawing.Point(790, 55)
+$roleButton.Size = New-Object System.Drawing.Size(120, 22)
+$roleButton.Add_Click({ [IO.File]::WriteAllText((Join-Path $Folder 'role-clicked.txt'), 'clicked') })
+$form.Controls.Add($roleButton)
 $delayed = New-Object System.Windows.Forms.Button
 $delayed.AccessibleName = 'Delayed control'
 $delayed.Text = 'Delayed control'
@@ -113,6 +126,13 @@ $timer.Add_Tick({
                     $cover.BringToFront()
                 }
                 'uncover' { $cover.Hide(); $form.Activate() }
+                'maximize' { $form.WindowState = 'Maximized' }
+                'minimize' { $form.WindowState = 'Minimized' }
+                'restore' { $form.WindowState = 'Normal' }
+                'window-state' {
+                    $response.state = $form.WindowState.ToString()
+                    $response.bounds = @{ x = $form.Left; y = $form.Top; width = $form.Width; height = $form.Height }
+                }
                 'delay-control' {
                     $delayed.Enabled = $false
                     $script:enableControlAt = [DateTime]::UtcNow.AddMilliseconds(1200)

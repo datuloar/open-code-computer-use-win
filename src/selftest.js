@@ -179,6 +179,24 @@ export async function runSelfTest({ root, cli, exec }) {
       const elapsed = Date.now() - start;
       return { detail: `${elapsed} ms for the warm tree`, metrics: { warmTreeMs: elapsed } };
     });
+    await check('focus preserves maximized bounds and restores minimized windows', async () => {
+      try {
+        await fixtureCommand('maximize');
+        const before = await fixtureCommand('window-state');
+        assert.equal(before.state, 'Maximized');
+        await tool('focus', { pid: target.pid });
+        const after = await fixtureCommand('window-state');
+        assert.equal(after.state, 'Maximized');
+        assert.deepEqual(after.bounds, before.bounds);
+        await fixtureCommand('minimize');
+        assert.equal((await fixtureCommand('window-state')).state, 'Minimized');
+        await tool('focus', { pid: target.pid });
+        assert.notEqual((await fixtureCommand('window-state')).state, 'Minimized');
+      } finally {
+        await fixtureCommand('restore');
+        await tool('focus', { pid: target.pid });
+      }
+    });
     await check('off-screen move and drag fail before changing the pointer', async () => {
       const display = /DISPLAY (\d+)x(\d+)/.exec(callCli(['display']));
       assert.ok(display);
@@ -223,11 +241,26 @@ export async function runSelfTest({ root, cli, exec }) {
     await check('tap considers exact duplicates beyond its displayed candidate limit', async () => {
       assert.match(await tool('tap', { pid: target.pid, text: 'Ambiguous target' }, true), /2 controls match/);
     });
-    await check('tap refuses a covered target without clicking the covering window', async () => {
+    await check('observed roles resolve cross-role names but preserve true ambiguity and disabled exact matches', async () => {
+      assert.match(await tool('tap', { pid: target.pid, text: 'Role target' }, true), /2 controls match/);
+      const observed = JSON.parse((await tool('find', { pid: target.pid, text: 'Role target', role: 'Button', details: true })).split('\n')[0]);
+      assert.equal(observed.control.role, 'Button');
+      await tool('tap', { pid: target.pid, text: 'Role target', role: 'Button' });
+      await until(() => existsSync(join(folder, 'role-clicked.txt')));
+      const ready = JSON.parse((await tool('wait', { pid: target.pid, text: 'Role target', role: 'Button', seconds: 2 })).split('\n')[0]);
+      assert.equal(ready.observation.control.role, 'Button');
+      assert.match(await tool('tap', { pid: target.pid, text: 'Ambiguous target', role: 'Button' }, true), /2 controls match/);
+      assert.match(await tool('tap', { pid: target.pid, text: 'Delayed control', role: 'Button' }, true), /named control is disabled/);
+      const missing = JSON.parse((await tool('find', { pid: target.pid, text: 'Role target', role: 'CheckBox', details: true })).split('\n')[0]);
+      assert.equal(missing.found, false);
+    });
+    await check('tap refuses the covered control but can select the owned popup itself', async () => {
       try {
         await fixtureCommand('cover');
         assert.match(await tool('tap', { window: target.title, text: 'Test action' }, true), /covered by another window/);
         assert.ok(!existsSync(join(folder, 'decoy-clicked.txt')));
+        await tool('tap', { window: target.title, text: 'Covered target', role: 'Button' });
+        await until(() => existsSync(join(folder, 'decoy-clicked.txt')));
       } finally {
         await fixtureCommand('uncover');
       }

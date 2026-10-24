@@ -68,6 +68,10 @@ test('bad arguments fail as a tool error before anything touches the machine', a
     ['wait', { seconds: 0, text: 'Ready' }, /conditional wait seconds/],
     ['wait', { seconds: 1, pid: 123 }, /requires text/],
     ['wait', { seconds: 1, text: 'Ready', pid: 1, window: 'Test' }, /not both/],
+    ['tap', { text: 'Oval', role: '' }, /role must not be empty/],
+    ['tap', { text: 'Oval', role: 'Button.*' }, /role must be/],
+    ['find', { text: 'Oval', role: null }, /role must be/],
+    ['wait', { seconds: 1, role: 'Button' }, /requires text/],
   ];
   for (const [name, args, pattern] of cases) {
     const response = await request('tools/call', { name, arguments: args });
@@ -82,6 +86,15 @@ test('detailed finding uses the same CLI inspection without adding another model
     ['inspect', 'Field', '--pid', '123', '--max-chars', '40']);
   assert.deepEqual(find.cli({ text: 'Field' }), ['find', 'Field']);
   assert.equal(TOOLS.some((tool) => tool.name === 'inspect'), false);
+});
+
+test('role-qualified MCP actions preserve the observed target in CLI arguments', () => {
+  const find = TOOLS.find((tool) => tool.name === 'find');
+  const tap = TOOLS.find((tool) => tool.name === 'tap');
+  assert.deepEqual(find.cli({ text: 'Oval', pid: 123, role: 'Button', details: true }),
+    ['inspect', 'Oval', '--pid', '123', '--role', 'Button']);
+  assert.deepEqual(tap.cli({ text: 'Oval', pid: 123, role: 'Button' }),
+    ['tap', 'Oval', '--pid', '123', '--role', 'Button']);
 });
 
 test('wait runs locally and reports how long it waited', async () => {
