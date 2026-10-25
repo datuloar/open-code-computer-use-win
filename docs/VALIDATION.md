@@ -21,6 +21,25 @@ authorized provider usage and a visible fixture window.
 Physical ESC, elevated input, secure desktop and additional monitors are separate checks.
 Source comparisons do not establish task win rates against other products.
 
+## Paint regression results: October 24, 2026
+
+The [Paint task report](https://github.com/datuloar/open-code-computer-use-win/blob/main/docs/benchmarks/2026-10-24-paint.md)
+records a saved colored rabbit, 130 MCP calls and the observed output overhead. The supervising
+assistant used the real MCP server; the two OpenCode free-provider attempts returned HTTP 403
+before any model step. Provider tokens and task cost remain unmeasured.
+
+- Role selection, popup visibility and window-focus fixes: 79 unit checks and 32 isolated
+  desktop checks passed, with a source fingerprint in the
+  [desktop report](https://github.com/datuloar/open-code-computer-use-win/blob/main/docs/benchmarks/2026-10-24-v1.0.0-opencode.json).
+- Shorter MCP reminders and dialog/canvas guidance: 79 unit checks passed. The
+  [OpenCode integration report](https://github.com/datuloar/open-code-computer-use-win/blob/main/docs/benchmarks/2026-10-24-v1.0.0-smoke.json)
+  confirms four completed tool steps, seven loaded guidance checks and cleanup before file access.
+
+Popup checks retain refusal for covered targets, including another window owned by the same app.
+Failed development attempts remain in local test folders. The final suite passed after fixing
+the fixture and selecting the verified native popup ancestry rule. The reports describe these
+specific checks; physical ESC and provider decision quality still require separate validation.
+
 ## Initial release results: October 19, 2026
 
 - Static native package, skill and CLI contract: passed.

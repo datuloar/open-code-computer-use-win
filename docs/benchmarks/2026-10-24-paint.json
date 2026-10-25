@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "test": "Paint colored rabbit",
+  "pluginVersion": "1.0.0",
+  "execution": "Supervising assistant using the actual MCP server directly; exploratory run with source repairs",
+  "taskCompleted": true,
+  "startedAt": "2026-10-24T09:48:13.667Z",
+  "finishedAt": "2026-10-24T09:59:01.881Z",
+  "elapsedMs": 648214,
+  "toolDurationMs": 58557,
+  "calls": 130,
+  "inputCalls": 103,
+  "refusedCalls": 3,
+  "requestCharacters": 7982,
+  "responseCharacters": 42955,
+  "decodedImageBytes": 647698,
+  "byTool": {
+    "windows": {
+      "calls": 2,
+      "refused": 0,
+      "durationMs": 673,
+      "responseCharacters": 1504,
+      "imageBytes": 0
+    },
+    "focus": {
+      "calls": 2,
+      "refused": 0,
+      "durationMs": 6214,
+      "responseCharacters": 396,
+      "imageBytes": 0
+    },
+    "ui_tree": {
+      "calls": 5,
+      "refused": 0,
+      "durationMs": 1145,
+      "responseCharacters": 17730,
+      "imageBytes": 0
+    },
+    "tap": {
+      "calls": 33,
+      "refused": 3,
+      "durationMs": 19106,
+      "responseCharacters": 7404,
+      "imageBytes": 0
+    },
+    "screenshot": {
+      "calls": 11,
+      "refused": 0,
+      "durationMs": 348,
+      "responseCharacters": 2750,
+      "imageBytes": 647698
+    },
+    "indicator": {
+      "calls": 2,
+      "refused": 0,
+      "durationMs": 294,
+      "responseCharacters": 14,
+      "imageBytes": 0
+    },
+    "click": {
+      "calls": 29,
+      "refused": 0,
+      "durationMs": 3981,
+      "responseCharacters": 5046,
+      "imageBytes": 0
+    },
+    "wait": {
+      "calls": 6,
+      "refused": 0,
+      "durationMs": 1202,
+      "responseCharacters": 989,
+      "imageBytes": 0
+    },
+    "find": {
+      "calls": 1,
+      "refused": 0,
+      "durationMs": 93,
+      "responseCharacters": 231,
+      "imageBytes": 0
+    },
+    "drag": {
+      "calls": 29,
+      "refused": 0,
+      "durationMs": 22391,
+      "responseCharacters": 5262,
+      "imageBytes": 0
+    },
+    "press": {
+      "calls": 9,
+      "refused": 0,
+      "durationMs": 103,
+      "responseCharacters": 1462,
+      "imageBytes": 0
+    },
+    "type": {
+      "calls": 1,
+      "refused": 0,
+      "durationMs": 3007,
+      "responseCharacters": 167,
+      "imageBytes": 0
+    }
+  },
+  "artifact": {
+    "format": "PNG",
+    "width": 1536,
+    "height": 864,
+    "bytes": 25793,
+    "sha256": "6a6f9d16439b714b6ad2f675f84d5d33bf5c0e235401e8a33a8fd0eaca3cfc66"
+  },
+  "traceSha256": "172e3929fb1f584acc7afb0f68fb260fdb56c92fb3ea7099b3719b1fcebdbd81",
+  "textOnlyCounterfactual": {
+    "reminderOccurrences": 125,
+    "oldReminderCharacters": 152,
+    "newReminderCharacters": 75,
+    "removedCharacters": 9625,
+    "responseCharactersAfter": 33330,
+    "measuredModelTokenSavings": null
+  },
+  "toolCatalogUtf8Bytes": {
+    "before": 6666,
+    "after": 6882
+  },
+  "providerAttempts": [
+    {
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "variant": "low",
+      "startedAt": "2026-10-23T03:57:26.247Z",
+      "elapsedMs": 4631,
+      "statusCode": 403,
+      "errorType": "FreeTierError",
+      "toolCalls": 0,
+      "usageEvents": 0,
+      "tokens": null,
+      "costUSD": null
+    },
+    {
+      "model": "opencode/nemotron-3-ultra-free",
+      "variant": "low",
+      "startedAt": "2026-10-23T03:58:32.388Z",
+      "elapsedMs": 4565,
+      "statusCode": 403,
+      "errorType": "FreeTierError",
+      "toolCalls": 0,
+      "usageEvents": 0,
+      "tokens": null,
+      "costUSD": null
+    }
+  ],
+  "measurementLimits": [
+    "No provider usage events; tokens and task cost are unknown.",
+    "Elapsed time includes reasoning, source repairs and pauses.",
+    "Character counts exclude protocol wrappers, images, tool catalog, instructions and history.",
+    "Screenshots and raw desktop observations remain local.",
+    "The shorter-reminder calculation is not a second drawing run."
+  ]
+}

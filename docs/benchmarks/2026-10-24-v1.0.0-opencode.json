@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 1,
+  "suite": "opencode-cu-desktop",
+  "status": "passed",
+  "startedAt": "2026-10-24T10:11:19.312Z",
+  "version": "1.0.0",
+  "sourceSha256": "052cf674ab9c151e35377410d1105fbf8b83f3fc727a86b99d94043103f551bf",
+  "environment": {
+    "platform": "win32",
+    "osRelease": "10.0.26200",
+    "arch": "x64",
+    "node": "v24.19.0",
+    "theme": "opencode",
+    "announceSeconds": 5,
+    "display": {
+      "width": 2560,
+      "height": 1440
+    }
+  },
+  "checks": [
+    {
+      "id": "documentation-and-command-surface-agree",
+      "name": "documentation and command surface agree",
+      "status": "passed",
+      "durationMs": 2
+    },
+    {
+      "id": "input-and-focus-refuse-before-the-indicator-starts",
+      "name": "input and focus refuse before the indicator starts",
+      "status": "passed",
+      "durationMs": 99
+    },
+    {
+      "id": "invalid-mcp-arguments-never-start-the-indicator",
+      "name": "invalid MCP arguments never start the indicator",
+      "status": "passed",
+      "durationMs": 2
+    },
+    {
+      "id": "mcp-focus-starts-a-countdown-and-blocks-concurrent-input",
+      "name": "MCP focus starts a countdown and blocks concurrent input",
+      "status": "passed",
+      "detail": "6294 ms including cold startup",
+      "metrics": {
+        "coldStartWithCountdownMs": 6294
+      },
+      "durationMs": 6294
+    },
+    {
+      "id": "warm-backend-reads-controls-and-recovers-after-an-error",
+      "name": "warm backend reads controls and recovers after an error",
+      "status": "passed",
+      "detail": "165 ms for the warm tree",
+      "metrics": {
+        "warmTreeMs": 165
+      },
+      "durationMs": 485
+    },
+    {
+      "id": "focus-preserves-maximized-bounds-and-restores-minimized-windows",
+      "name": "focus preserves maximized bounds and restores minimized windows",
+      "status": "passed",
+      "durationMs": 789
+    },
+    {
+      "id": "off-screen-move-and-drag-fail-before-changing-the-pointer",
+      "name": "off-screen move and drag fail before changing the pointer",
+      "status": "passed",
+      "durationMs": 1843
+    },
+    {
+      "id": "typing-preserves-unicode-whitespace-tabs-and-newlines",
+      "name": "typing preserves Unicode, whitespace, tabs and newlines",
+      "status": "passed",
+      "durationMs": 2431
+    },
+    {
+      "id": "typing-leaves-the-clipboard-sequence-unchanged",
+      "name": "typing leaves the clipboard sequence unchanged",
+      "status": "passed",
+      "durationMs": 123
+    },
+    {
+      "id": "uia-inspection-verifies-the-complete-typed-value-without-ocr",
+      "name": "UIA inspection verifies the complete typed value without OCR",
+      "status": "passed",
+      "durationMs": 199
+    },
+    {
+      "id": "tap-refuses-a-disabled-exact-target-instead-of-its-enabled-substring",
+      "name": "tap refuses a disabled exact target instead of its enabled substring",
+      "status": "passed",
+      "durationMs": 179
+    },
+    {
+      "id": "a-named-button-click-reaches-the-fixture",
+      "name": "a named button click reaches the fixture",
+      "status": "passed",
+      "durationMs": 381
+    },
+    {
+      "id": "tap-considers-exact-duplicates-beyond-its-displayed-candidate-limit",
+      "name": "tap considers exact duplicates beyond its displayed candidate limit",
+      "status": "passed",
+      "durationMs": 175
+    },
+    {
+      "id": "observed-roles-resolve-cross-role-names-but-preserve-true-ambiguity-and-disabled-exact-matches",
+      "name": "observed roles resolve cross-role names but preserve true ambiguity and disabled exact matches",
+      "status": "passed",
+      "durationMs": 1424
+    },
+    {
+      "id": "tap-refuses-the-covered-control-but-can-select-the-owned-popup-itself",
+      "name": "tap refuses the covered control but can select the owned popup itself",
+      "status": "passed",
+      "durationMs": 889
+    },
+    {
+      "id": "typed-flag-names-and-whitespace-remain-literal-text",
+      "name": "typed flag names and whitespace remain literal text",
+      "status": "passed",
+      "durationMs": 699
+    },
+    {
+      "id": "screenshot-returns-png-pixels",
+      "name": "screenshot returns PNG pixels",
+      "status": "passed",
+      "durationMs": 650
+    },
+    {
+      "id": "invalid-key-combinations-release-held-modifiers",
+      "name": "invalid key combinations release held modifiers",
+      "status": "passed",
+      "durationMs": 405
+    },
+    {
+      "id": "stop-removes-state-and-leaves-the-cursor-alone",
+      "name": "stop removes state and leaves the cursor alone",
+      "status": "passed",
+      "durationMs": 143
+    },
+    {
+      "id": "key-releases-still-work-after-control-stops",
+      "name": "key releases still work after control stops",
+      "status": "passed",
+      "durationMs": 618
+    },
+    {
+      "id": "read-only-inspection-bounds-values-and-hides-password-fields-without-starting-control",
+      "name": "read-only inspection bounds values and hides password fields without starting control",
+      "status": "passed",
+      "durationMs": 933
+    },
+    {
+      "id": "conditional-waiting-observes-readiness-without-moving-the-pointer-or-starting-control",
+      "name": "conditional waiting observes readiness without moving the pointer or starting control",
+      "status": "passed",
+      "metrics": {
+        "waitChecks": 2,
+        "waitForReadyMs": 578
+      },
+      "durationMs": 2355
+    },
+    {
+      "id": "a-configured-one-second-countdown-completes-before-control-is-ready",
+      "name": "a configured one second countdown completes before control is ready",
+      "status": "passed",
+      "metrics": {
+        "configuredSeconds": 1,
+        "startupWithCountdownMs": 2254
+      },
+      "durationMs": 3007
+    },
+    {
+      "id": "stopping-during-the-countdown-never-reports-control-ready",
+      "name": "stopping during the countdown never reports control ready",
+      "status": "passed",
+      "durationMs": 1636
+    },
+    {
+      "id": "cancelling-indicator-startup-leaves-no-late-indicator-behind",
+      "name": "cancelling indicator startup leaves no late indicator behind",
+      "status": "passed",
+      "durationMs": 1097
+    },
+    {
+      "id": "a-stop-interrupts-text-within-the-current-chunk",
+      "name": "a stop interrupts text within the current chunk",
+      "status": "passed",
+      "detail": "39 ms from stop request to MCP refusal",
+      "metrics": {
+        "stopToRefusalMs": 39
+      },
+      "durationMs": 2474
+    },
+    {
+      "id": "mcp-cancellation-interrupts-input-and-releases-the-desktop",
+      "name": "MCP cancellation interrupts input and releases the desktop",
+      "status": "passed",
+      "detail": "63 ms from cancellation to cleanup",
+      "metrics": {
+        "cancelToCleanupMs": 63
+      },
+      "durationMs": 2373
+    },
+    {
+      "id": "cursor-replacement-is-opt-in-and-restored-on-stop",
+      "name": "cursor replacement is opt-in and restored on stop",
+      "status": "passed",
+      "durationMs": 2482
+    },
+    {
+      "id": "killing-an-indicator-refuses-input-and-repairs-its-hidden-cursor",
+      "name": "killing an indicator refuses input and repairs its hidden cursor",
+      "status": "passed",
+      "durationMs": 2499
+    },
+    {
+      "id": "a-stale-pid-record-cannot-kill-the-fixture",
+      "name": "a stale pid record cannot kill the fixture",
+      "status": "passed",
+      "durationMs": 652
+    },
+    {
+      "id": "another-mcp-client-cannot-take-or-stop-this-desktop-session",
+      "name": "another MCP client cannot take or stop this desktop session",
+      "status": "passed",
+      "durationMs": 4793
+    },
+    {
+      "id": "mcp-disconnect-stops-its-owned-indicator",
+      "name": "MCP disconnect stops its owned indicator",
+      "status": "passed",
+      "durationMs": 1749
+    }
+  ],
+  "finishedAt": "2026-10-24T10:12:04.609Z",
+  "durationMs": 45297,
+  "summary": {
+    "passed": 32,
+    "failed": 0
+  }
+}
