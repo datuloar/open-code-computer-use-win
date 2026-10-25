@@ -20,7 +20,10 @@ jobs:
         shell: powershell
         run: |
           $version = (Get-Content -LiteralPath package.json -Raw | ConvertFrom-Json).version
-          if ($env:GITHUB_REF_NAME -ne ('v' + $version)) { throw 'Tag must match package.json version.' }
+          $expectedTag = 'v' + $version
+          if ($env:GITHUB_REF_NAME -ne $expectedTag) {
+            throw "Release tag '$env:GITHUB_REF_NAME' does not match package.json version '$version'. Push tag '$expectedTag' to release this package."
+          }
       - name: Build release
         run: powershell -NoProfile -ExecutionPolicy Bypass -File package-opencode.ps1 -OutputDir dist/release -Repository $env:GITHUB_REPOSITORY
       - name: Publish release assets
@@ -30,5 +33,10 @@ jobs:
         run: |
           $archive = @(Get-ChildItem -LiteralPath dist/release -Filter '*.zip')
           if ($archive.Count -ne 1) { throw 'Expected exactly one release archive.' }
-          gh release create $env:GITHUB_REF_NAME ($archive[0].FullName) dist/release/SHA256SUMS.txt --verify-tag --generate-notes --title $env:GITHUB_REF_NAME
+          gh release view $env:GITHUB_REF_NAME --json tagName > $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:GITHUB_REF_NAME ($archive[0].FullName) dist/release/SHA256SUMS.txt
+          } else {
+            gh release create $env:GITHUB_REF_NAME ($archive[0].FullName) dist/release/SHA256SUMS.txt --verify-tag --generate-notes --title $env:GITHUB_REF_NAME
+          }
           if ($LASTEXITCODE -ne 0) { throw 'GitHub release upload failed.' }
