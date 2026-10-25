@@ -449,7 +449,7 @@ export async function handle(message) {
           requests.delete(id);
         }
         if (indicatorIsUp() && indicatorProcessAlive()) {
-          result.content.push({ type: 'text', text: 'Desktop control is still ON. Call indicator with action="stop" before switching to shell work or replying. Idle shutdown: 60s without a desktop command.' });
+          result.content.push({ type: 'text', text: 'Control ON. Use indicator {"action":"stop"} before other tools or replying.' });
         }
         return success(id, result);
       });

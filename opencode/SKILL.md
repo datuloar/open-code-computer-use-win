@@ -33,14 +33,17 @@ Reuse a target pid across window tools, but read its new bounds after movement. 
 `x`, `y`, `width`, `height` from observed screen bounds, not guessed percentages. Cropping does not
 change input coordinates: points remain physical screen pixels. A text-only model cannot see an
 image merely from its path. Do not try local vision repeatedly if its installation is missing.
+When a dialog opens, read the foreground tree without a pid or title. A pid can still select the
+parent window. Use the dialog's observed title for subsequent named controls.
 
 ## Act and verify
 
 Bring a minimized or covered target forward with `computer_focus`, then inspect it. Use
 `computer_tap` for a uniquely named control; it refuses ambiguous and covered targets. Do not
 guess between duplicate labels. Pass an observed `role`, such as `Button`, to `computer_find`,
-`computer_tap` or conditional `computer_wait` to distinguish a container from its child control. Do not
-replace a named field or button with a coordinate click. Before typing, focus the selected window
+`computer_tap` or conditional `computer_wait` to distinguish a container from its child control.
+If a provider cannot identify a visible popup, confirm its target with cropped OCR or a fresh image
+before using coordinates. Before typing, focus the selected window
 and tap the named field. Reading that window's UIA tree does not bring it forward or focus a field.
 Reuse confirmed focus only within the current interaction; recheck after any interruption. Use
 `computer_click`, `computer_move` or `computer_drag` only against freshly observed points.
@@ -73,6 +76,11 @@ use `max_chars` up to 2000 when needed. Whitespace is preserved. Protected field
 unsupported or unavailable values need cropped OCR or an image if authorized. Never infer a
 complete value from a truncated prefix. Optional state includes readOnly, toggle and selection.
 If the available observation cannot confirm it, report that gap rather than declare success.
+
+For canvases, group related strokes and inspect a crop of the changed area. After a toolbar change,
+verify the first stroke; some apps consume its click to restore focus. Check for partial input
+before retrying. In Paint, an empty canvas click commits a selected shape but may leave a mark with
+another tool. Verify the saved image too.
 
 ## Common call arguments
 

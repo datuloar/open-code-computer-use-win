@@ -5,11 +5,12 @@ Use file and shell tools for code, files and builds. Before the first desktop in
 `opencode-computer-use` once with the skill tool when available; do this before starting control.
 The rules below also apply when skill loading is unavailable. Do not change skill permissions.
 
-List `computer_windows` once, choose the intended window, and reuse its pid with window tools.
+List `computer_windows` once, choose a window, and reuse its pid. When a dialog opens, inspect the
+foreground without a target; the old pid may select its parent. Then use the observed dialog title.
 If the label is known, use targeted `computer_find`; otherwise read `computer_ui_tree` for that
 window. Start with its default depth, increasing to 10-14 only when a browser page is missing.
-For a named field or button, use `computer_tap`; do not substitute a raw coordinate click.
-If labels repeat across roles, pass the observed role (for example Button) to find, tap or wait.
+Prefer `computer_tap` for named controls. Resolve repeated labels with an observed role (e.g. Button).
+If UIA cannot identify a popup, confirm it in cropped OCR or a fresh image before a coordinate click.
 Fall back to cropped `computer_read_text`, then a cropped
 `computer_screenshot` for a vision model or `computer_see` if local vision is installed. Derive the
 crop from observed window bounds; coordinates stay in physical screen pixels. Do not take a full
